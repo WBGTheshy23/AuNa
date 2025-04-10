@@ -147,6 +147,105 @@
   <!--  Base Link  -->
   <link name="$(arg namespace)base_link" />
 
+  <!-- Marker_1 (Red) - Front center -->
+  <link name="$(arg namespace)marker_1">
+    <inertial>
+      <mass value="0.01" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+      <material name="red">
+        <color rgba="1 0 0 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <gazebo reference="$(arg namespace)marker_1">
+    <material>Gazebo/Red</material>
+    <gravity>false</gravity> <!-- Prevent marker from falling -->
+  </gazebo>
+
+  <joint name="marker_1_joint" type="fixed">
+    <parent link="$(arg namespace)chassis"/>
+    <child link="$(arg namespace)marker_1"/>
+    <origin xyz="0.2 0.0 0.2" rpy="0 0 0"/> <!-- Front center, above chassis -->
+  </joint>
+
+  <!-- Marker_2 (Green) - Rear left -->
+  <link name="$(arg namespace)marker_2">
+    <inertial>
+      <mass value="0.01" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+      <material name="green">
+        <color rgba="0 1 0 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <gazebo reference="$(arg namespace)marker_2">
+    <material>Gazebo/Green</material>
+    <gravity>false</gravity> <!-- Prevent marker from falling -->
+  </gazebo>
+
+  <joint name="marker_2_joint" type="fixed">
+    <parent link="$(arg namespace)chassis"/>
+    <child link="$(arg namespace)marker_2"/>
+    <origin xyz="-0.1 0.1 0.2" rpy="0 0 0"/> <!-- Rear left, above chassis -->
+  </joint>
+
+  <!-- Marker_3 (Blue) - Rear right -->
+  <link name="$(arg namespace)marker_3">
+    <inertial>
+      <mass value="0.01" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.05"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <gazebo reference="$(arg namespace)marker_3">
+    <material>Gazebo/Blue</material>
+    <gravity>false</gravity> <!-- Prevent marker from falling -->
+  </gazebo>
+
+  <joint name="marker_3_joint" type="fixed">
+    <parent link="$(arg namespace)chassis"/>
+    <child link="$(arg namespace)marker_3"/>
+    <origin xyz="-0.1 -0.1 0.2" rpy="0 0 0"/> <!-- Rear right, above chassis -->
+  </joint>
+
   <!--  Chassis  -->
   <joint name="base_link_joint" type="fixed">
     <origin xyz="${base_x_origin_to_wheel_origin} 0 0.05" rpy="0 0 0" />
