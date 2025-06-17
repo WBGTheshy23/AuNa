@@ -44,13 +44,22 @@ private:
 
         for (const auto &robot_namespace : robot_names_)
         {
-            for (const std::string &marker_name : {"marker_1", "marker_2", "marker_3"})
+            for (const std::string &marker_name : {"marker_1", "marker_2", "marker_3", "marker_4", "marker_5", "marker_6", "marker_7"})
             {
                 std::string target_frame = robot_namespace + "/odom";
                 std::string source_frame = robot_namespace + "/" + marker_name;
 
                 try
                 {
+                    // Check if the transform exists
+                    if (!tf_buffer_->canTransform(target_frame, source_frame, rclcpp::Time(0)))
+                    {
+                        RCLCPP_WARN(this->get_logger(),
+                                    "Transform not available for %s/%s",
+                                    robot_namespace.c_str(),
+                                    marker_name.c_str());
+                        continue;  // Skip this marker
+                    }
                     geometry_msgs::msg::TransformStamped transform =
                         tf_buffer_->lookupTransform(target_frame, source_frame, rclcpp::Time(0));
 

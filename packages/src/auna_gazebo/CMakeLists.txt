@@ -30,10 +30,13 @@ find_package(etsi_its_msgs REQUIRED)
 find_package(etsi_its_msgs_utils REQUIRED)
 ####################################################
 find_package(gazebo_ros REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(visualization_msgs REQUIRED)
 #####################################################
 
 # Include Cpp "include" directory
 include_directories(include)
+include_directories(include ${EIGEN3_INCLUDE_DIR})
 
 # Add libraries
 add_library(robot_name_publisher_node SHARED src/robot_name_publisher/robot_name_publisher.cpp)
@@ -70,6 +73,36 @@ ament_target_dependencies(ground_truth_localization ${ground_truth_localization_
 
 #################################################
 add_executable(robot_marker_publisher src/robot_marker_publisher/robot_marker_publisher.cpp)
+add_executable(robot_polygon_publisher src/robot_marker_clustering/robot_polygon_publisher.cpp)
+add_executable(robot_marker_clustering
+  src/robot_marker_clustering/robot_marker_clustering.cpp
+  src/robot_marker_clustering/dbscan.cpp
+)
+add_executable(robot_mot src/robot_mot/robot_mot.cpp)
+
+ament_target_dependencies(robot_mot
+  rclcpp
+  geometry_msgs
+  visualization_msgs
+  tf2
+  tf2_geometry_msgs
+)
+
+ament_target_dependencies(robot_polygon_publisher
+  rclcpp
+  geometry_msgs
+  visualization_msgs
+  tf2
+  tf2_geometry_msgs
+)
+
+ament_target_dependencies(robot_marker_clustering 
+  rclcpp
+  geometry_msgs
+  visualization_msgs
+  tf2
+  tf2_geometry_msgs
+)
 
 ament_target_dependencies(robot_marker_publisher
   rclcpp
@@ -85,12 +118,13 @@ target_link_libraries(global_tf global_tf_node)
 target_link_libraries(localization_pose_publisher localization_pose_publisher_node)
 target_link_libraries(ground_truth_cam ground_truth_cam_node)
 target_link_libraries(ground_truth_localization ground_truth_localization_node)
-
-
 ###################################################
 install(TARGETS
   robot_name_publisher
   robot_marker_publisher
+  robot_marker_clustering
+  robot_polygon_publisher
+  robot_mot
   DESTINATION lib/${PROJECT_NAME}
 )
 ###############################################

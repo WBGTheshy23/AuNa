@@ -57,7 +57,7 @@ def include_launch_description(context: LaunchContext):
 
     launch_actions = []
 
-    for robot in robots:
+    for idx, robot in enumerate(robots):
         actions = []
 
         if namespace:
@@ -69,6 +69,7 @@ def include_launch_description(context: LaunchContext):
                                  '_spawn_individual_robot.launch.py')
                 ),
                 launch_arguments={
+                    'random_markers': str(idx),
                     'use_sim_time': use_sim_time,
                     'x_pose': str(robot['x_pose']),
                     'y_pose': str(robot['y_pose']),

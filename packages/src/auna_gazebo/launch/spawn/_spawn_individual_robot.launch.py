@@ -22,6 +22,7 @@ def generate_launch_description():
         pkg_dir, 'launch', 'ground_truth_localization')
 
     # Launch Configurations
+    random_markers = LaunchConfiguration('random_markers')
     name = LaunchConfiguration('name')
     namespace = LaunchConfiguration('namespace')
     use_sim_time = LaunchConfiguration('use_sim_time')
@@ -32,6 +33,10 @@ def generate_launch_description():
 
     # Launch Arguments
     launch_args = [
+        DeclareLaunchArgument(
+            'random_markers',
+            description='ID markers',
+            default_value='1'),
         DeclareLaunchArgument(
             'name',
             default_value='robot',
@@ -80,6 +85,7 @@ def generate_launch_description():
                              '_robot_state_publisher.launch.py')
             ),
             launch_arguments={
+                'random_markers': random_markers,
                 'use_sim_time': use_sim_time,
             }.items()
         ),

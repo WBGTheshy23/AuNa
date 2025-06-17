@@ -3,7 +3,8 @@
   
   <!-- Arguments -->
   <xacro:arg name="namespace" default=""/>
-
+  <xacro:arg name="random_markers" default="0"/>
+ 
   <!-- Properties -->
   <xacro:property name="cameraSizeL" value="0.03"/>
   <xacro:property name="cameraSizeB" value="0.03"/>
@@ -156,7 +157,7 @@
     </inertial>
     <visual>
       <geometry>
-        <sphere radius="0.05"/>
+        <sphere radius="0.01"/>
       </geometry>
       <material name="red">
         <color rgba="1 0 0 1"/>
@@ -164,7 +165,7 @@
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.05"/>
+        <sphere radius="0.01"/>
       </geometry>
     </collision>
   </link>
@@ -177,7 +178,7 @@
   <joint name="marker_1_joint" type="fixed">
     <parent link="$(arg namespace)chassis"/>
     <child link="$(arg namespace)marker_1"/>
-    <origin xyz="0.2 0.0 0.2" rpy="0 0 0"/> <!-- Front center, above chassis -->
+    <origin xyz="0.1 0.0 0.2" rpy="0 0 0"/> <!-- Front center, above chassis -->
   </joint>
 
   <!-- Marker_2 (Green) - Rear left -->
@@ -189,7 +190,7 @@
     </inertial>
     <visual>
       <geometry>
-        <sphere radius="0.05"/>
+        <sphere radius="0.01"/>
       </geometry>
       <material name="green">
         <color rgba="0 1 0 1"/>
@@ -197,7 +198,7 @@
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.05"/>
+        <sphere radius="0.01"/>
       </geometry>
     </collision>
   </link>
@@ -210,7 +211,7 @@
   <joint name="marker_2_joint" type="fixed">
     <parent link="$(arg namespace)chassis"/>
     <child link="$(arg namespace)marker_2"/>
-    <origin xyz="-0.1 0.1 0.2" rpy="0 0 0"/> <!-- Rear left, above chassis -->
+    <origin xyz="-0.12 0.025 0.2" rpy="0 0 0"/> <!-- Rear left, above chassis -->
   </joint>
 
   <!-- Marker_3 (Blue) - Rear right -->
@@ -222,7 +223,7 @@
     </inertial>
     <visual>
       <geometry>
-        <sphere radius="0.05"/>
+        <sphere radius="0.01"/>
       </geometry>
       <material name="blue">
         <color rgba="0 0 1 1"/>
@@ -230,7 +231,7 @@
     </visual>
     <collision>
       <geometry>
-        <sphere radius="0.05"/>
+        <sphere radius="0.01"/>
       </geometry>
     </collision>
   </link>
@@ -243,8 +244,146 @@
   <joint name="marker_3_joint" type="fixed">
     <parent link="$(arg namespace)chassis"/>
     <child link="$(arg namespace)marker_3"/>
-    <origin xyz="-0.1 -0.1 0.2" rpy="0 0 0"/> <!-- Rear right, above chassis -->
+    <origin xyz="-0.12 -0.025 0.2" rpy="0 0 0"/> <!-- Rear right, above chassis -->
   </joint>
+
+  <!-- Marker_4 (Blue) - Front -->
+  <link name="$(arg namespace)marker_4">
+    <inertial>
+      <mass value="0.01" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.01"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.01"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <gazebo reference="$(arg namespace)marker_4">
+    <material>Gazebo/Blue</material>
+    <gravity>false</gravity> <!-- Prevent marker from falling -->
+  </gazebo>
+
+  <joint name="marker_4_joint" type="fixed">
+    <parent link="$(arg namespace)chassis"/>
+    <child link="$(arg namespace)marker_4"/>
+    <origin xyz="0.22 -0.07 0.2" rpy="0 0 0"/>
+  </joint>
+
+  <xacro:if value="${$(arg random_markers) >= 1}">
+    <!-- Marker_5 (Blue) - Front -->
+    <link name="$(arg namespace)marker_5">
+      <inertial>
+        <mass value="0.01" />
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+      </inertial>
+      <visual>
+        <geometry>
+          <sphere radius="0.01"/>
+        </geometry>
+        <material name="blue">
+          <color rgba="0 0 1 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <sphere radius="0.01"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <gazebo reference="$(arg namespace)marker_5">
+      <material>Gazebo/Blue</material>
+      <gravity>false</gravity> <!-- Prevent marker from falling -->
+    </gazebo>
+    
+    <joint name="marker_5_joint" type="fixed">
+      <parent link="$(arg namespace)chassis"/>
+      <child link="$(arg namespace)marker_5"/>
+      <origin xyz="0.22 0.07 0.2" rpy="0 0 0"/> 
+    </joint>
+  </xacro:if>
+
+  <xacro:if value="${$(arg random_markers) >= 2}">
+    <!-- Marker_6 (Blue) - Front -->
+    <link name="$(arg namespace)marker_6">
+      <inertial>
+        <mass value="0.01" />
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+      </inertial>
+      <visual>
+        <geometry>
+          <sphere radius="0.01"/>
+        </geometry>
+        <material name="blue">
+          <color rgba="0 0 1 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <sphere radius="0.01"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <gazebo reference="$(arg namespace)marker_6">
+      <material>Gazebo/Blue</material>
+      <gravity>false</gravity> <!-- Prevent marker from falling -->
+    </gazebo>
+
+    <joint name="marker_6_joint" type="fixed">
+      <parent link="$(arg namespace)chassis"/>
+      <child link="$(arg namespace)marker_6"/>
+      <origin xyz="0.22 0.03 0.2" rpy="0 0 0"/> 
+    </joint>
+  </xacro:if>
+
+  <xacro:if value="${$(arg random_markers) >= 3}">
+    <!-- Marker_7 (Blue) - Front -->
+    <link name="$(arg namespace)marker_7">
+      <inertial>
+        <mass value="0.01" />
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+      </inertial>
+      <visual>
+        <geometry>
+          <sphere radius="0.01"/>
+        </geometry>
+        <material name="blue">
+          <color rgba="0 0 1 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <sphere radius="0.01"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <gazebo reference="$(arg namespace)marker_7">
+      <material>Gazebo/Blue</material>
+      <gravity>false</gravity> <!-- Prevent marker from falling -->
+    </gazebo>
+
+    <joint name="marker_7_joint" type="fixed">
+      <parent link="$(arg namespace)chassis"/>
+      <child link="$(arg namespace)marker_7"/>
+      <origin xyz="0.22 -0.03 0.2" rpy="0 0 0"/> 
+    </joint>
+  </xacro:if>
 
   <!--  Chassis  -->
   <joint name="base_link_joint" type="fixed">

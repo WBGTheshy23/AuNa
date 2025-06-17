@@ -21,7 +21,6 @@ def generate_launch_description():
     p_orientation = LaunchConfiguration('p_orientation')
     y_orientation = LaunchConfiguration('y_orientation')
 
-    # Launch Arguments
     name_arg = DeclareLaunchArgument(
         'name',
         default_value='robot',
