@@ -79,5 +79,6 @@
         "variant": "cpp",
         "core": "cpp",
         "csignal": "cpp"
-    }
+    },
+    "C_Cpp.dimInactiveRegions": false
 }

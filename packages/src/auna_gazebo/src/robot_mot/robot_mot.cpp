@@ -1,182 +1,242 @@
 #include "rclcpp/rclcpp.hpp"
-#include "visualization_msgs/msg/marker_array.hpp"
-#include "geometry_msgs/msg/point.hpp"
-#include "tf2/LinearMath/Quaternion.h"
 #include "tf2/LinearMath/Matrix3x3.h"
+#include "tf2/LinearMath/Quaternion.h"
 
-#include <vector>
+#include "geometry_msgs/msg/point.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
+
 #include <cmath>
-#include <climits>
-#include <unordered_map>
+#include <limits>
+#include <vector>
 
-// ========================== 匈牙利算法实现 ==========================
-class Hungarian {
+// Hungarian Algorithm for assignment
+class Hungarian
+{
 public:
-    static std::vector<int> Solve(const std::vector<std::vector<double>>& cost) {
-        int n = cost.size();
-        int m = cost[0].size();
-        std::vector<int> u(n+1), v(m+1), p(m+1), way(m+1);
-        for (int i = 1; i <= n; ++i) {
-            p[0] = i;
-            int j0 = 0;
-            std::vector<int> minv(m+1, INT_MAX);
-            std::vector<bool> used(m+1, false);
-            do {
-                used[j0] = true;
-                int i0 = p[j0], delta = INT_MAX, j1;
-                for (int j = 1; j <= m; ++j) {
-                    if (!used[j]) {
-                        int cur = cost[i0-1][j-1] - u[i0] - v[j];
-                        if (cur < minv[j]) {
-                            minv[j] = cur;
-                            way[j] = j0;
-                        }
-                        if (minv[j] < delta) {
-                            delta = minv[j];
-                            j1 = j;
-                        }
-                    }
-                }
-                for (int j = 0; j <= m; ++j) {
-                    if (used[j]) {
-                        u[p[j]] += delta;
-                        v[j] -= delta;
-                    } else {
-                        minv[j] -= delta;
-                    }
-                }
-                j0 = j1;
-            } while (p[j0] != 0);
-            do {
-                int j1 = way[j0];
-                p[j0] = p[j1];
-                j0 = j1;
-            } while (j0);
-        }
+  static std::vector<int> Solve(const std::vector<std::vector<double>> & cost)
+  {
+    int n = cost.size();
+    int m = cost[0].size();
+    std::vector<double> u(n + 1), v(m + 1);
+    std::vector<int> p(m + 1), way(m + 1);
 
-        std::vector<int> ans(n, -1);
+    for (int i = 1; i <= n; ++i) {
+      p[0] = i;
+      int j0 = 0;
+      std::vector<double> minv(m + 1, std::numeric_limits<double>::max());
+      std::vector<bool> used(m + 1, false);
+      do {
+        used[j0] = true;
+        int i0 = p[j0], j1;
+        double delta = std::numeric_limits<double>::max();
         for (int j = 1; j <= m; ++j) {
-            if (p[j] > 0 && p[j] <= n)
-                ans[p[j]-1] = j-1;
+          if (!used[j]) {
+            double cur = cost[i0 - 1][j - 1] - u[i0] - v[j];
+            if (cur < minv[j]) {
+              minv[j] = cur;
+              way[j] = j0;
+            }
+            if (minv[j] < delta) {
+              delta = minv[j];
+              j1 = j;
+            }
+          }
         }
-        return ans;
+        for (int j = 0; j <= m; ++j) {
+          if (used[j]) {
+            u[p[j]] += delta;
+            v[j] -= delta;
+          } else {
+            minv[j] -= delta;
+          }
+        }
+        j0 = j1;
+      } while (p[j0] != 0);
+      do {
+        int j1 = way[j0];
+        p[j0] = p[j1];
+        j0 = j1;
+      } while (j0);
     }
+
+    std::vector<int> ans(n, -1);
+    for (int j = 1; j <= m; ++j) {
+      if (p[j] > 0 && p[j] <= n) ans[p[j] - 1] = j - 1;
+    }
+    return ans;
+  }
 };
 
-// ========================== Tracker 节点 ==========================
-
-struct Car {
-    int id;
-    geometry_msgs::msg::Point position;
-    double yaw;
+struct Car
+{
+  int track_id;
+  geometry_msgs::msg::Point position;
+  double yaw;
+  bool visible;
 };
 
-class TrackerNode : public rclcpp::Node {
+class TrackerNode : public rclcpp::Node
+{
 public:
-    TrackerNode() : Node("tracker_node") {
-        sub_ = this->create_subscription<visualization_msgs::msg::MarkerArray>(
-            "/car_id", 10,
-            std::bind(&TrackerNode::callback, this, std::placeholders::_1));
-
-        RCLCPP_INFO(this->get_logger(), "TrackerNode started.");
-    }
+  TrackerNode() : Node("tracker_node")
+  {
+    sub_ = this->create_subscription<visualization_msgs::msg::MarkerArray>(
+      "/car_id", 10, std::bind(&TrackerNode::callback, this, std::placeholders::_1));
+    marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/tracked_cars", 10);
+    RCLCPP_INFO(this->get_logger(), "TrackerNode started.");
+  }
 
 private:
-    rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr sub_;
-    std::vector<Car> tracked_cars_;
-    int next_id_ = 1;
-    double yaw_weight_ = 0.5;
+  rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr sub_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
 
-    double getYaw(const geometry_msgs::msg::Quaternion& q) {
-        tf2::Quaternion quat(q.x, q.y, q.z, q.w);
-        tf2::Matrix3x3 m(quat);
-        double roll, pitch, yaw;
-        m.getRPY(roll, pitch, yaw);
-        return yaw;
+  std::vector<Car> tracked_cars_;
+  bool initialized_ = false;
+  const double yaw_weight_ = 0.5;
+
+  double getYaw(const geometry_msgs::msg::Quaternion & q) const
+  {
+    tf2::Quaternion quat(q.x, q.y, q.z, q.w);
+    tf2::Matrix3x3 m(quat);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+    return yaw;
+  }
+
+  double costFunction(const Car & prev, const geometry_msgs::msg::Point & pos, double yaw) const
+  {
+    double dx = prev.position.x - pos.x;
+    double dy = prev.position.y - pos.y;
+    double dist = std::sqrt(dx * dx + dy * dy);
+    double dyaw = std::fabs(prev.yaw - yaw);
+    if (dyaw > M_PI) dyaw = 2 * M_PI - dyaw;
+    return dist + yaw_weight_ * dyaw;
+  }
+
+  void initializeTracks(const visualization_msgs::msg::MarkerArray::SharedPtr msg)
+  {
+    tracked_cars_.clear();
+    for (const auto & marker : msg->markers) {
+      Car car;
+      car.track_id = marker.id;
+      car.position = marker.pose.position;
+      car.yaw = getYaw(marker.pose.orientation);
+      car.visible = true;
+      tracked_cars_.push_back(car);
+    }
+    initialized_ = true;
+  }
+
+  void updateTracks(
+    const std::vector<geometry_msgs::msg::Point> & positions, const std::vector<double> & yaws)
+  {
+    int N = static_cast<int>(tracked_cars_.size());
+    int M = static_cast<int>(positions.size());
+
+    std::vector<std::vector<double>> cost(N, std::vector<double>(M));
+    for (int i = 0; i < N; ++i)
+      for (int j = 0; j < M; ++j)
+        cost[i][j] = costFunction(tracked_cars_[i], positions[j], yaws[j]);
+
+    std::vector<int> assignment = Hungarian::Solve(cost);
+
+    for (auto & car : tracked_cars_) car.visible = false;
+
+    for (int i = 0; i < N; ++i) {
+      int j = assignment[i];
+      if (j >= 0 && j < M) {
+        tracked_cars_[i].position = positions[j];
+        tracked_cars_[i].yaw = yaws[j];
+        tracked_cars_[i].visible = true;
+      }
+    }
+  }
+
+  void callback(const visualization_msgs::msg::MarkerArray::SharedPtr msg)
+  {
+    std::vector<geometry_msgs::msg::Point> positions;
+    std::vector<double> yaws;
+    positions.reserve(msg->markers.size());
+    yaws.reserve(msg->markers.size());
+
+    for (const auto & marker : msg->markers) {
+      positions.push_back(marker.pose.position);
+      yaws.push_back(getYaw(marker.pose.orientation));
     }
 
-    double costFunction(const Car& prev, const Car& curr) {
-        double dx = prev.position.x - curr.position.x;
-        double dy = prev.position.y - curr.position.y;
-        double distance = std::sqrt(dx * dx + dy * dy);
-
-        double dyaw = std::fabs(prev.yaw - curr.yaw);
-        if (dyaw > M_PI) dyaw = 2 * M_PI - dyaw;
-
-        return distance + yaw_weight_ * dyaw;
+    if (!initialized_) {
+      initializeTracks(msg);
+    } else {
+      updateTracks(positions, yaws);
     }
 
-    void callback(const visualization_msgs::msg::MarkerArray::SharedPtr msg) {
-        std::vector<Car> current_cars;
-
-        for (const auto& marker : msg->markers) {
-            Car c;
-            c.position = marker.pose.position;
-            c.yaw = getYaw(marker.pose.orientation);
-            c.id = -1;
-            current_cars.push_back(c);
-        }
-
-        if (tracked_cars_.empty()) {
-            for (auto& c : current_cars) {
-                c.id = next_id_++;
-                tracked_cars_.push_back(c);
-                RCLCPP_INFO(this->get_logger(), "Init car ID %d", c.id);
-            }
-            return;
-        }
-
-        // 构建 cost 矩阵
-        int N = tracked_cars_.size();
-        int M = current_cars.size();
-        std::vector<std::vector<double>> cost(N, std::vector<double>(M, 0));
-
-        for (int i = 0; i < N; ++i)
-            for (int j = 0; j < M; ++j)
-                cost[i][j] = costFunction(tracked_cars_[i], current_cars[j]);
-
-        // 使用匈牙利算法求解
-        std::vector<int> assignment = Hungarian::Solve(cost);
-
-        std::vector<Car> new_tracked;
-
-        std::vector<bool> matched(M, false);
-        for (size_t i = 0; i < assignment.size(); ++i) {
-            int j = assignment[i];
-            if (j >= 0 && j < M) {
-                current_cars[j].id = tracked_cars_[i].id;
-                new_tracked.push_back(current_cars[j]);
-                matched[j] = true;
-            }
-        }
-
-        // 分配新 ID 给未匹配的
-        for (size_t j = 0; j < M; ++j) {
-            if (!matched[j]) {
-                current_cars[j].id = next_id_++;
-                new_tracked.push_back(current_cars[j]);
-                RCLCPP_INFO(this->get_logger(), "New car ID %d", current_cars[j].id);
-            }
-        }
-
-        tracked_cars_ = new_tracked;
-        RCLCPP_INFO(this->get_logger(), "== Tracked Cars (Frame Update) ==");
-
-        for (const auto& car : tracked_cars_) {
-            RCLCPP_INFO(this->get_logger(),
-                "Car ID: %d | Pos: [%.2f, %.2f] | Yaw: %.2f deg",
-                car.id,
-                car.position.x,
-                car.position.y,
-                car.yaw * 180.0 / M_PI  // 弧度转角度
-            );
-        }
+    RCLCPP_INFO(this->get_logger(), "Tracked cars:");
+    for (const auto & car : tracked_cars_) {
+      RCLCPP_INFO(
+        this->get_logger(), "ID: %d, Position: (%.2f, %.2f, %.2f), Yaw: %.2f, Visible: %s",
+        car.track_id, car.position.x, car.position.y, car.position.z, car.yaw,
+        car.visible ? "true" : "false");
     }
+
+    publishMarkers();
+  }
+
+  void publishMarkers()
+  {
+    visualization_msgs::msg::MarkerArray marker_array;
+    for (const auto & car : tracked_cars_) {
+      visualization_msgs::msg::Marker arrow;
+      arrow.header.frame_id = "robot0/odom";
+      arrow.header.stamp = this->get_clock()->now();
+      arrow.ns = "car_arrows";
+      arrow.id = car.track_id;
+      arrow.type = visualization_msgs::msg::Marker::ARROW;
+      arrow.action = visualization_msgs::msg::Marker::ADD;
+      arrow.pose.position = car.position;
+
+      tf2::Quaternion q;
+      q.setRPY(0, 0, car.yaw);
+      arrow.pose.orientation.x = q.x();
+      arrow.pose.orientation.y = q.y();
+      arrow.pose.orientation.z = q.z();
+      arrow.pose.orientation.w = q.w();
+
+      arrow.scale.x = 1.0;
+      arrow.scale.y = 0.2;
+      arrow.scale.z = 0.2;
+
+      arrow.color.r = car.visible ? 0.0f : 1.0f;
+      arrow.color.g = 1.0f;
+      arrow.color.b = 0.0f;
+      arrow.color.a = 1.0f;
+
+      visualization_msgs::msg::Marker text;
+      text.header = arrow.header;
+      text.ns = "car_labels";
+      text.id = car.track_id + 1000;
+      text.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
+      text.action = visualization_msgs::msg::Marker::ADD;
+      text.pose.position = car.position;
+      text.pose.position.z += 1.0;
+      text.scale.z = 0.5;
+      text.color.r = 1.0f;
+      text.color.g = 1.0f;
+      text.color.b = 1.0f;
+      text.color.a = 1.0f;
+      text.text = "ID: " + std::to_string(car.track_id);
+
+      marker_array.markers.push_back(arrow);
+      marker_array.markers.push_back(text);
+    }
+
+    marker_pub_->publish(marker_array);
+  }
 };
 
-int main(int argc, char **argv) {
-    rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<TrackerNode>());
-    rclcpp::shutdown();
-    return 0;
+int main(int argc, char ** argv)
+{
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<TrackerNode>());
+  rclcpp::shutdown();
+  return 0;
 }
