@@ -13,7 +13,7 @@ class HoldKeyTeleop(Teleop):
     def __init__(self):
         super().__init__()
         self.SPEED_STEP = 0.1
-        self.lock = threading.Lock()  # Add a lock for thread safety
+        self.lock = threading.Lock()
         self.key_listener = Listener(
             on_press=self.update_twist,
             on_release=self.on_release,
@@ -32,8 +32,8 @@ class HoldKeyTeleop(Teleop):
             Key.left: (0.0, self.ANGULAR_MAX),
             Key.right: (0.0, -self.ANGULAR_MAX),
         }
-        self.pressed_keys = set()  # Track currently pressed keys
-        self.running = True  # Flag to indicate if node is running
+        self.pressed_keys = set()
+        self.running = True
         self.get_logger().info(
             f"""
 This node takes keypresses from the keyboard and publishes them 
@@ -49,11 +49,13 @@ i to increase forward speed (0.1 step)
 k to decrease forward speed (0.1 step)
 u to increase turning speed (0.1 step)
 j to decrease turning speed (0.1 step)
-Any other key to stop
-CTRL-C or q to quit
+e to switch to the next namespace
+q to switch to the previous namespace
+CTRL-C to quit
 
 Configuration:
 
+Current Namespace: {self.active_namespace}
 Max Linear Speed: +/-{self.LINEAR_MAX} m/s
 Max Angular Speed: +/-{self.ANGULAR_MAX} rad/s
 """
@@ -65,8 +67,7 @@ Max Angular Speed: +/-{self.ANGULAR_MAX} rad/s
         if hasattr(self, 'key_listener'):
             if self.key_listener.is_alive():
                 self.key_listener.stop()
-                self.key_listener.join(timeout=1)  # Wait for thread to finish
-        # Make sure the robot stops when shutting down
+                self.key_listener.join(timeout=1)
         self.write_twist(0.0, 0.0)
 
     def compute_current_twist(self):
@@ -119,7 +120,7 @@ Max Angular Speed: +/-{self.ANGULAR_MAX} rad/s
                         if key_char in self.keys_bindings:
                             self.pressed_keys.discard(key_char)
                     except AttributeError:
-                        pass  # Key doesn't have a char attribute
+                        pass
 
             # Update twist based on remaining pressed keys
             linear, angular = self.compute_current_twist()
@@ -142,8 +143,10 @@ Max Angular Speed: +/-{self.ANGULAR_MAX} rad/s
             else:
                 try:
                     key_char = key.char
-                    if key_char == "q":
-                        os.kill(os.getpid(), signal.SIGINT)
+                    if key_char == "e":
+                        self.switch_namespace("next")
+                    elif key_char == "q":
+                        self.switch_namespace("previous")
                     elif key_char == "i":
                         with self.lock:
                             self.linear_speed_multiplier = min(

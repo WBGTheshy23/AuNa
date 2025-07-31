@@ -16,16 +16,17 @@ def generate_launch_description():
     default_model_path = os.path.join(pkg_dir, 'models/race_car/model.urdf')
 
     # Launch Configurations
-    random_markers = LaunchConfiguration('random_markers')
+    robot_index = LaunchConfiguration('robot_index', default='1')
     model = LaunchConfiguration('model')
     use_sim_time = LaunchConfiguration('use_sim_time')
 
     # Launch Arguments
-    random_markers_arg = DeclareLaunchArgument(
-        'random_markers',
+    robot_index_arg = DeclareLaunchArgument(
+        'robot_index',
         default_value='1',
         description='ID markers'
     )
+
     model_arg = DeclareLaunchArgument(
         name='model',
         default_value=default_model_path,
@@ -46,8 +47,8 @@ def generate_launch_description():
         output='screen',
         parameters=[{
             'robot_description': Command([
-                'xacro ', LaunchConfiguration('model'),
-                ' random_markers:=', random_markers
+                'xacro ', model,
+                ' robot_index:=', robot_index
             ]),
             'use_sim_time': use_sim_time
         }],
@@ -59,7 +60,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         # Launch Arguments
-        random_markers_arg,
+        robot_index_arg,
         model_arg,
         use_sim_time_arg,
         # Nodes

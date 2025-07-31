@@ -23,10 +23,10 @@ find_package(std_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/StringArray.msg"
-  "srv/StringArray.srv"
   "srv/Identifier.srv"
   "srv/SetFloat64.srv"
   "srv/SetBool.srv"
+  "srv/SetString.srv"
   DEPENDENCIES builtin_interfaces std_msgs
  )
  

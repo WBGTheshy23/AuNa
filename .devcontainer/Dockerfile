@@ -21,7 +21,7 @@ RUN if [ "$INSTALL_ROS2" = "true" ]; then \
     curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | tee /etc/apt/sources.list.d/ros2.list > /dev/null && \
     apt-get update && \
-    apt-get install -y ros-humble-desktop libgeographic-dev python3-pip python3-colcon-common-extensions ros-dev-tools; \
+    apt-get install -y ros-humble-desktop libgeographic-dev ros-humble-geographic-msgs python3-pip python3-colcon-common-extensions ros-dev-tools; \
     fi
 
 # --- Install Gazebo ---
@@ -79,7 +79,7 @@ RUN apt-get update && \
     pip install pep8 pylint
 
 # --- Install ROS 2 packages for F1/10 ---
-RUN if [ "$INSTALL_ROS2" = "true" ]; then \
+RUN if [ "$INSTALL_ROS2" = "true" ];then \
     apt-get install -y ros-humble-ackermann-msgs ros-humble-urg-node ros-humble-serial-driver ros-humble-asio-cmake-module ros-humble-joy-teleop; \
     fi
 
@@ -92,17 +92,23 @@ RUN if [ "$INSTALL_ROS2" = "true" ]; then \
     libunwind-dev \
     ros-humble-navigation2 \
     ros-humble-nav2-bringup \
-    ros-humble-robot-localization \
     ros-humble-etsi-its-* \
     ros-humble-gazebo-msgs \
     ros-humble-joy-linux \
     ros-humble-teleop-twist-keyboard \
-    ros-humble-teleop-twist-joy; \
+    ros-humble-teleop-twist-joy \
+    ros-humble-robot-localization; \
     fi
 
 # --- Install python package for teleop
 RUN if [ "$INSTALL_ROS2" = "true" ]; then \
     pip install pynput=='1.7.8'; \
+    fi
+
+# --- Install mqtt packages
+RUN if [ "$INSTALL_ROS2" = "true" ]; then \
+    apt-get update && \
+    apt-get install -y libpaho-mqtt-dev; \
     fi
 
 # --- Set up user ---
@@ -129,8 +135,8 @@ ARG ROS_DOMAIN_ID
 ENV DISPLAY=${DISPLAY}
 ENV ROS_LOCALHOST_ONLY=${ROS_LOCALHOST_ONLY:-0}
 ENV ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-ENV CYCLONEDDS_URI=/home/vscode/workspace/cyclone_dds_config.xml
+# ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+# ENV CYCLONEDDS_URI=/home/vscode/workspace/cyclone_dds_config.xml
 
 # --- Set up entrypoint ---
 

@@ -3,7 +3,7 @@
   
   <!-- Arguments -->
   <xacro:arg name="namespace" default=""/>
-  <xacro:arg name="random_markers" default="0"/>
+  <xacro:arg name="robot_index" default="1"/>
  
   <!-- Properties -->
   <xacro:property name="cameraSizeL" value="0.03"/>
@@ -280,7 +280,7 @@
     <origin xyz="0.22 -0.07 0.2" rpy="0 0 0"/>
   </joint>
 
-  <xacro:if value="${$(arg random_markers) >= 1}">
+  <xacro:if value="${$(arg robot_index) >= 2}">
     <!-- Marker_5 (Blue) - Front -->
     <link name="$(arg namespace)marker_5">
       <inertial>
@@ -315,7 +315,7 @@
     </joint>
   </xacro:if>
 
-  <xacro:if value="${$(arg random_markers) >= 2}">
+  <xacro:if value="${$(arg robot_index) >= 3}">
     <!-- Marker_6 (Blue) - Front -->
     <link name="$(arg namespace)marker_6">
       <inertial>
@@ -350,7 +350,7 @@
     </joint>
   </xacro:if>
 
-  <xacro:if value="${$(arg random_markers) >= 3}">
+  <xacro:if value="${$(arg robot_index) >= 4}">
     <!-- Marker_7 (Blue) - Front -->
     <link name="$(arg namespace)marker_7">
       <inertial>
@@ -560,7 +560,7 @@
 
       <!-- output -->
       <publish_odom>true</publish_odom>
-      <publish_odom_tf>true</publish_odom_tf>
+      <publish_odom_tf>false</publish_odom_tf>
       <publish_wheel_tf>false</publish_wheel_tf>
       <publish_distance>true</publish_distance>
       

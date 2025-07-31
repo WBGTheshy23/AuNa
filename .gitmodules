@@ -13,4 +13,3 @@
 [submodule "packages/src/physical/ros-g29-force-feedback"]
 	path = packages/src/physical/ros-g29-force-feedback
 	url = https://github.com/kuriatsu/ros-g29-force-feedback.git
-	

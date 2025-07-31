@@ -15,8 +15,6 @@ def include_launch_description(context: LaunchContext):
     # Package Directories
     pkg_dir = get_package_share_directory('auna_gazebo')
     launch_file_dir = os.path.join(pkg_dir, 'launch', 'spawn')
-    robot_description_file_dir = os.path.join(
-        pkg_dir, 'launch', 'robot_description')
 
     # Get configurations from context
     robot_number = int(context.launch_configurations['robot_number'])
@@ -57,7 +55,7 @@ def include_launch_description(context: LaunchContext):
 
     launch_actions = []
 
-    for idx, robot in enumerate(robots):
+    for robot in robots:
         actions = []
 
         if namespace:
@@ -69,7 +67,6 @@ def include_launch_description(context: LaunchContext):
                                  '_spawn_individual_robot.launch.py')
                 ),
                 launch_arguments={
-                    'random_markers': str(idx),
                     'use_sim_time': use_sim_time,
                     'x_pose': str(robot['x_pose']),
                     'y_pose': str(robot['y_pose']),
@@ -119,7 +116,7 @@ def generate_launch_description():
     ground_truth_arg = DeclareLaunchArgument(
         'ground_truth',
         default_value='False',
-        description='Whether to use ground_truth_localization for localization'
+        description='Whether to use ground_truth_transform for localization'
     )
 
     namespace_arg = DeclareLaunchArgument(

@@ -5,6 +5,7 @@
 #include "auna_msgs/srv/set_bool.hpp"
 #include "auna_msgs/srv/set_float64.hpp"
 #include "etsi_its_cam_msgs/msg/cam.hpp"
+#include "geometry_msgs/msg/pose_array.hpp"  // Added include for PoseArray
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "nav_msgs/msg/odometry.hpp"
@@ -29,7 +30,7 @@ struct Parameters
   std::string waypoint_file;
   int frequency;
   double target_velocity;
-  int curvature_lookahead;
+  double curvature_lookahead;
   double extra_distance;
 };
 
@@ -62,6 +63,10 @@ private:
 
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_x_lookahead_point_;
   rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub_y_lookahead_point_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_closest_pose_waypoint_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_target_waypoint_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_closest_cam_waypoint_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pub_cacc_pose_;
 
   // pub_cam_ publisher for cam
   rclcpp::Publisher<etsi_its_cam_msgs::msg::CAM>::SharedPtr pub_cam_;
@@ -100,6 +105,16 @@ private:
   double yaw_;
   geometry_msgs::msg::PoseStamped::SharedPtr last_pose_msg_;
 
+  // variables for control
+  double control_x_;
+  double control_y_;
+  double control_velocity_;
+  double control_last_velocity_ = 0;
+  double control_acceleration_;
+  double control_yaw_;
+  double control_yaw_rate_;
+  double control_curvature_;
+
   // variables for waypoints
   std::vector<double> waypoints_x_;
   std::vector<double> waypoints_y_;
@@ -122,6 +137,9 @@ private:
   // general functions
   void read_waypoints_from_csv();
   void update_waypoint_following();
+  void publish_waypoint_pose(
+    const rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr & publisher,
+    int waypoint_index);
 
   // callback functions
   void cam_callback(const etsi_its_cam_msgs::msg::CAM::SharedPtr msg);
@@ -198,4 +216,7 @@ private:
   std::string log_file_path_;
   std::ofstream log_file_;
   int log_counter_ = 0;
+
+  rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr
+    pub_waypoints_pose_array_;  // Added publisher
 };
