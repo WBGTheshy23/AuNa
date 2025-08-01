@@ -41,7 +41,7 @@ private:
   {
     geometry_msgs::msg::PoseArray all_marker_positions;
     all_marker_positions.header.stamp = this->now();
-    all_marker_positions.header.frame_id = "gazebo_world";
+    all_marker_positions.header.frame_id = "map";
 
     for (const auto & robot_namespace : robot_names_) {
       for (const std::string & marker_name :

@@ -70,7 +70,7 @@ private:
   {
     geometry_msgs::msg::PoseArray pose_array_msg;
     pose_array_msg.header.stamp = this->get_clock()->now();
-    pose_array_msg.header.frame_id = "gazebo_world";
+    pose_array_msg.header.frame_id = "map";
 
     visualization_msgs::msg::MarkerArray id_markers;
 

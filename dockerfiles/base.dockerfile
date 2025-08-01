@@ -2,7 +2,7 @@ FROM ros:humble
 
 # Configure environment
 ENV DEBIAN_FRONTEND=noninteractive
-ENV ROS_DOMAIN_ID=0
+ENV ROS_DOMAIN_ID=12
 ENV TZ=Etc/UTC
 
 # Update package lists once at the beginning
