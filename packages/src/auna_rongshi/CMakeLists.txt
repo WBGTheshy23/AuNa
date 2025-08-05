@@ -52,6 +52,15 @@ add_executable(robot_marker_clustering
   src/robot_marker_clustering/dbscan.cpp
 )
 add_executable(robot_mot src/robot_mot/robot_mot.cpp)
+add_executable(robot_pose_error src/robot_pose_error/robot_pose_error.cpp)
+
+ament_target_dependencies(robot_pose_error 
+  rclcpp 
+  geometry_msgs 
+  tf2 
+  tf2_ros 
+  tf2_geometry_msgs
+)
 
 ament_target_dependencies(robot_mot
   rclcpp
@@ -80,7 +89,9 @@ ament_target_dependencies(robot_marker_clustering
 ament_target_dependencies(robot_marker_publisher
   rclcpp
   geometry_msgs
+  tf2
   tf2_ros
+  tf2_geometry_msgs
   auna_msgs
 )
 ##################################################
@@ -93,6 +104,7 @@ install(TARGETS
   robot_marker_clustering
   robot_polygon_publisher
   robot_mot
+  robot_pose_error
   DESTINATION lib/${PROJECT_NAME}
 )
 ###############################################

@@ -54,7 +54,7 @@
   
   <!-- Wheel macro -->
   <xacro:macro name="wheel" params="fb lr parent translateX translateY left OffsetJointX OffsetJointY OffsetJointZ OffsetY">
-    <link name="$(arg namespace)${lr}_wheel_${fb}">
+    <link name="${lr}_wheel_${fb}">
       <inertial>
         <mass value="${wheel_mass}" />
         <origin xyz="0 ${OffsetY} 0" rpy="${90*pi/180} 0 0"/>
@@ -77,8 +77,8 @@
     </link>
 
     <joint name="${lr}_wheel_${fb}_hinge" type="continuous">
-      <parent link="$(arg namespace)${parent}"/>
-      <child link="$(arg namespace)${lr}_wheel_${fb}"/>
+      <parent link="${parent}"/>
+      <child link="${lr}_wheel_${fb}"/>
       <origin xyz="${translateX * OffsetJointX} ${translateY * OffsetJointY} ${OffsetJointZ}" rpy="0 0 0" /> 
       <axis xyz="0 1 0" rpy="0 0 0" />
       <limit effort="20" velocity="500"/>
@@ -104,7 +104,7 @@
 
   <!-- Steering macro -->
   <xacro:macro name="steering_hinge" params="lr parent translateY OffsetY">
-    <link name="$(arg namespace)${lr}_steering">
+    <link name="${lr}_steering">
       <inertial>
         <mass value="${steering_mass}" />
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -125,8 +125,8 @@
 
     <joint name="${lr}_steering_hinge" type="continuous">
       <origin xyz="${base_x_origin_to_wheel_origin} ${translateY * base_y_origin_to_wheel_origin} ${base_z_origin_to_wheel_origin}" rpy="0 0 0" />
-      <parent link="$(arg namespace)${parent}" />
-      <child link="$(arg namespace)${lr}_steering" />
+      <parent link="${parent}" />
+      <child link="${lr}_steering" />
       <axis xyz="0 0 1" />
       <limit lower="-1.0" upper="1.0" effort="10" velocity="100" />
     </joint>
@@ -146,10 +146,10 @@
 
 
   <!--  Base Link  -->
-  <link name="$(arg namespace)base_link" />
+  <link name="base_link" />
 
   <!-- Marker_1 (Red) - Front center -->
-  <link name="$(arg namespace)marker_1">
+  <link name="marker_1">
     <inertial>
       <mass value="0.01" />
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -170,19 +170,19 @@
     </collision>
   </link>
 
-  <gazebo reference="$(arg namespace)marker_1">
+  <gazebo reference="marker_1">
     <material>Gazebo/Red</material>
     <gravity>false</gravity> <!-- Prevent marker from falling -->
   </gazebo>
 
   <joint name="marker_1_joint" type="fixed">
-    <parent link="$(arg namespace)chassis"/>
-    <child link="$(arg namespace)marker_1"/>
+    <parent link="chassis"/>
+    <child link="marker_1"/>
     <origin xyz="0.1 0.0 0.2" rpy="0 0 0"/> <!-- Front center, above chassis -->
   </joint>
 
   <!-- Marker_2 (Green) - Rear left -->
-  <link name="$(arg namespace)marker_2">
+  <link name="marker_2">
     <inertial>
       <mass value="0.01" />
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -203,19 +203,19 @@
     </collision>
   </link>
 
-  <gazebo reference="$(arg namespace)marker_2">
+  <gazebo reference="marker_2">
     <material>Gazebo/Green</material>
     <gravity>false</gravity> <!-- Prevent marker from falling -->
   </gazebo>
 
   <joint name="marker_2_joint" type="fixed">
-    <parent link="$(arg namespace)chassis"/>
-    <child link="$(arg namespace)marker_2"/>
+    <parent link="chassis"/>
+    <child link="marker_2"/>
     <origin xyz="-0.12 0.025 0.2" rpy="0 0 0"/> <!-- Rear left, above chassis -->
   </joint>
 
   <!-- Marker_3 (Blue) - Rear right -->
-  <link name="$(arg namespace)marker_3">
+  <link name="marker_3">
     <inertial>
       <mass value="0.01" />
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -236,19 +236,19 @@
     </collision>
   </link>
 
-  <gazebo reference="$(arg namespace)marker_3">
+  <gazebo reference="marker_3">
     <material>Gazebo/Blue</material>
     <gravity>false</gravity> <!-- Prevent marker from falling -->
   </gazebo>
 
   <joint name="marker_3_joint" type="fixed">
-    <parent link="$(arg namespace)chassis"/>
-    <child link="$(arg namespace)marker_3"/>
+    <parent link="chassis"/>
+    <child link="marker_3"/>
     <origin xyz="-0.12 -0.025 0.2" rpy="0 0 0"/> <!-- Rear right, above chassis -->
   </joint>
 
   <!-- Marker_4 (Blue) - Front -->
-  <link name="$(arg namespace)marker_4">
+  <link name="marker_4">
     <inertial>
       <mass value="0.01" />
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -269,20 +269,20 @@
     </collision>
   </link>
 
-  <gazebo reference="$(arg namespace)marker_4">
+  <gazebo reference="marker_4">
     <material>Gazebo/Blue</material>
     <gravity>false</gravity> <!-- Prevent marker from falling -->
   </gazebo>
 
   <joint name="marker_4_joint" type="fixed">
-    <parent link="$(arg namespace)chassis"/>
-    <child link="$(arg namespace)marker_4"/>
+    <parent link="chassis"/>
+    <child link="marker_4"/>
     <origin xyz="0.22 -0.07 0.2" rpy="0 0 0"/>
   </joint>
 
   <xacro:if value="${$(arg robot_index) >= 2}">
     <!-- Marker_5 (Blue) - Front -->
-    <link name="$(arg namespace)marker_5">
+    <link name="marker_5">
       <inertial>
         <mass value="0.01" />
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -303,21 +303,21 @@
       </collision>
     </link>
 
-    <gazebo reference="$(arg namespace)marker_5">
+    <gazebo reference="marker_5">
       <material>Gazebo/Blue</material>
       <gravity>false</gravity> <!-- Prevent marker from falling -->
     </gazebo>
     
     <joint name="marker_5_joint" type="fixed">
-      <parent link="$(arg namespace)chassis"/>
-      <child link="$(arg namespace)marker_5"/>
+      <parent link="chassis"/>
+      <child link="marker_5"/>
       <origin xyz="0.22 0.07 0.2" rpy="0 0 0"/> 
     </joint>
   </xacro:if>
 
   <xacro:if value="${$(arg robot_index) >= 3}">
     <!-- Marker_6 (Blue) - Front -->
-    <link name="$(arg namespace)marker_6">
+    <link name="marker_6">
       <inertial>
         <mass value="0.01" />
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -338,21 +338,21 @@
       </collision>
     </link>
 
-    <gazebo reference="$(arg namespace)marker_6">
+    <gazebo reference="marker_6">
       <material>Gazebo/Blue</material>
       <gravity>false</gravity> <!-- Prevent marker from falling -->
     </gazebo>
 
     <joint name="marker_6_joint" type="fixed">
-      <parent link="$(arg namespace)chassis"/>
-      <child link="$(arg namespace)marker_6"/>
+      <parent link="chassis"/>
+      <child link="marker_6"/>
       <origin xyz="0.22 0.03 0.2" rpy="0 0 0"/> 
     </joint>
   </xacro:if>
 
   <xacro:if value="${$(arg robot_index) >= 4}">
     <!-- Marker_7 (Blue) - Front -->
-    <link name="$(arg namespace)marker_7">
+    <link name="marker_7">
       <inertial>
         <mass value="0.01" />
         <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -373,14 +373,14 @@
       </collision>
     </link>
 
-    <gazebo reference="$(arg namespace)marker_7">
+    <gazebo reference="marker_7">
       <material>Gazebo/Blue</material>
       <gravity>false</gravity> <!-- Prevent marker from falling -->
     </gazebo>
 
     <joint name="marker_7_joint" type="fixed">
-      <parent link="$(arg namespace)chassis"/>
-      <child link="$(arg namespace)marker_7"/>
+      <parent link="chassis"/>
+      <child link="marker_7"/>
       <origin xyz="0.22 -0.03 0.2" rpy="0 0 0"/> 
     </joint>
   </xacro:if>
@@ -388,11 +388,11 @@
   <!--  Chassis  -->
   <joint name="base_link_joint" type="fixed">
     <origin xyz="${base_x_origin_to_wheel_origin} 0 0.05" rpy="0 0 0" />
-    <parent link="$(arg namespace)base_link" />
-    <child link="$(arg namespace)chassis" />
+    <parent link="base_link" />
+    <child link="chassis" />
   </joint>
 
-  <link name='$(arg namespace)chassis'>
+  <link name='chassis'>
     <inertial>
       <mass value="${bodyMass}"/>
       <origin xyz="0 0 ${wheel_height/2}" rpy=" 0 0 0"/>
@@ -417,13 +417,13 @@
   <!--  Steering wheel  -->
   <joint name="steering_wheel_joint" type="continuous">
     <origin xyz="0.105 0 0.135" rpy="0 0 0" />
-    <parent link="$(arg namespace)chassis" />
-    <child link="$(arg namespace)steering_wheel" />
+    <parent link="chassis" />
+    <child link="steering_wheel" />
     <axis xyz="1 0 0" />
     <limit lower="-7.85" upper="7.85" effort="10000000" velocity="1000000"/>
   </joint>
 
-  <link name='$(arg namespace)steering_wheel'>
+  <link name='steering_wheel'>
     <inertial>
       <mass value="0.1"/>
       <xacro:box_inertia m="0.1" l="0.01" b="0.01" h="0.01" />
@@ -456,7 +456,7 @@
   <xacro:steering_hinge lr="right" parent="chassis" translateY="-1" OffsetY="-0.01" />
 
   <!-- Camera -->
-  <link name="$(arg namespace)camera">
+  <link name="camera">
     <inertial>
       <mass value="${cameraMass}" />
       <origin xyz="0 0 ${wheel_height/2}" rpy="0 0 0"/>
@@ -481,12 +481,12 @@
   <joint name="camera_joint" type="fixed">
     <axis xyz="0 1 0" />
     <origin xyz="0.21 0 0.075" rpy="0 0 0"/>
-    <parent link="$(arg namespace)chassis"/>
-    <child link="$(arg namespace)camera"/>
+    <parent link="chassis"/>
+    <child link="camera"/>
   </joint>
 
   <!-- Hokuyo Laser -->
-  <link name="$(arg namespace)laser">
+  <link name="laser">
     <inertial>
       <mass value="${hokuyoMass}" />
       <origin xyz="0 0 ${wheel_height/2}" rpy="0 0 0"/>
@@ -511,18 +511,18 @@
   <joint name="laser_joint" type="fixed">
     <axis xyz="0 1 0" />
     <origin xyz="0.21 0 0.135" rpy="0 0 0"/>
-    <parent link="$(arg namespace)chassis"/>
-    <child link="$(arg namespace)laser"/>
+    <parent link="chassis"/>
+    <child link="laser"/>
   </joint>
 
   <!-- IMU -->
-  <link name="$(arg namespace)imu_link" />
+  <link name="imu_link" />
 
   <joint name="imu_joint" type="fixed">
     <axis xyz="0 1 0" />
     <origin xyz="0 0 0.135" rpy="0 0 0"/>
-    <parent link="$(arg namespace)chassis"/>
-    <child link="$(arg namespace)imu_link"/>
+    <parent link="chassis"/>
+    <child link="imu_link"/>
   </joint>
   
   <!-- Plugins --> 

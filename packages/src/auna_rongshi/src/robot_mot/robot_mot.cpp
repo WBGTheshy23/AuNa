@@ -4,6 +4,7 @@
 
 #include "geometry_msgs/msg/point.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
 #include <cmath>
 #include <limits>
@@ -89,7 +90,9 @@ public:
 private:
   rclcpp::Subscription<visualization_msgs::msg::MarkerArray>::SharedPtr sub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
-  std::unordered_map<int, rclcpp::Publisher<geometry_msgs::msg::Pose>::SharedPtr> car_publishers_;
+  std::unordered_map<
+    int, rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr>
+    car_publishers_;
 
   std::vector<Car> tracked_cars_;
   bool initialized_ = false;
@@ -192,22 +195,35 @@ private:
       // Check if a publisher already exists for this car
       if (car_publishers_.find(car.track_id) == car_publishers_.end()) {
         car_publishers_[car.track_id] =
-          this->create_publisher<geometry_msgs::msg::Pose>(topic_name, 10);
+          this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(topic_name, 10);
         RCLCPP_INFO(this->get_logger(), "Created publisher for topic: %s", topic_name.c_str());
       }
 
-      // Publish the car's pose
-      geometry_msgs::msg::Pose pose;
-      pose.position = car.position;
+      // Construct PoseWithCovarianceStamped message
+      geometry_msgs::msg::PoseWithCovarianceStamped pose_cov_msg;
+      pose_cov_msg.header.stamp = this->get_clock()->now();
+      pose_cov_msg.header.frame_id = "map";  // or "odom", depending on your frame usage
+
+      pose_cov_msg.pose.pose.position = car.position;
 
       tf2::Quaternion q;
       q.setRPY(0, 0, car.yaw);
-      pose.orientation.x = q.x();
-      pose.orientation.y = q.y();
-      pose.orientation.z = q.z();
-      pose.orientation.w = q.w();
+      pose_cov_msg.pose.pose.orientation.x = q.x();
+      pose_cov_msg.pose.pose.orientation.y = q.y();
+      pose_cov_msg.pose.pose.orientation.z = q.z();
+      pose_cov_msg.pose.pose.orientation.w = q.w();
 
-      car_publishers_[car.track_id]->publish(pose);
+      // Fill in covariance matrix (6x6 row-major)
+      // Here we assume low uncertainty on X, Y, and Yaw; adjust as needed
+      for (int i = 0; i < 36; ++i) {
+        pose_cov_msg.pose.covariance[i] = 0.0;
+      }
+      pose_cov_msg.pose.covariance[0] = 0.05 * 0.05;  // X variance
+      pose_cov_msg.pose.covariance[7] = 0.05 * 0.05;  // Y variance
+      pose_cov_msg.pose.covariance[35] = 0.1 * 0.1;   // Yaw variance
+
+      // Publish the message
+      car_publishers_[car.track_id]->publish(pose_cov_msg);
     }
   }
 

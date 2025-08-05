@@ -45,11 +45,6 @@ def include_launch_description(context: LaunchContext):
         parameters=[
             ekf_global_config_path,
             {'use_sim_time': use_sim_time}
-        ],
-        remappings=[
-            # ('odometry/filtered', 'global_pose'),  # Unique output topic
-            # ('/tf', 'tf'),
-            # ('/tf_static', 'tf_static'),
         ]
     )
 

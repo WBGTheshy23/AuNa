@@ -1,6 +1,5 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import TimerAction
 
 def generate_launch_description():
     return LaunchDescription([
@@ -14,6 +13,12 @@ def generate_launch_description():
             package='auna_rongshi',
             executable='robot_marker_clustering',
             name='robot_marker_clustering',
+            output='screen'
+        ),
+        Node(
+            package='auna_rongshi',
+            executable='robot_mot',
+            name='robot_mot',
             output='screen'
         ),
     ])

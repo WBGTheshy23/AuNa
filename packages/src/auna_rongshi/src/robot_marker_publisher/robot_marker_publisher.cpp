@@ -7,6 +7,8 @@
 #include "geometry_msgs/msg/pose.hpp"
 #include "geometry_msgs/msg/pose_array.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 class MarkerPositionNode : public rclcpp::Node
 {
@@ -46,44 +48,38 @@ private:
     for (const auto & robot_namespace : robot_names_) {
       for (const std::string & marker_name :
            {"marker_1", "marker_2", "marker_3", "marker_4", "marker_5", "marker_6", "marker_7"}) {
-        std::string target_frame = "gazebo_world";
-        std::string source_frame = robot_namespace + "/" + marker_name;
-
         try {
-          // Check if the transform exists
-          // geometry_msgs::msg::TransformStamped transform;
-          // try {
-          //   transform = tf_buffer_->lookupTransform(target_frame, source_frame,
-          //   tf2::TimePointZero);
-          // } catch (tf2::TransformException & ex) {
-          //   RCLCPP_INFO(
-          //     this->get_logger(), "Could not find transform from odom to base_link: %s",
-          //     ex.what());
-          //   return;
-          // }
+          // Get transform from gazebo_world to ground_truth_base_link
+          geometry_msgs::msg::TransformStamped tf_world_to_gt = tf_buffer_->lookupTransform(
+            "gazebo_world", robot_namespace + "/ground_truth_base_link", tf2::TimePointZero);
 
-          if (!tf_buffer_->canTransform(target_frame, source_frame, tf2::TimePointZero)) {
-            RCLCPP_WARN(
-              this->get_logger(), "Transform not available for %s/%s", robot_namespace.c_str(),
-              marker_name.c_str());
-            continue;  // Skip this marker
-          }
-          geometry_msgs::msg::TransformStamped transform =
-            tf_buffer_->lookupTransform(target_frame, source_frame, tf2::TimePointZero);
+          tf2::Transform tf_world_to_gt_transform;
+          tf2::fromMsg(tf_world_to_gt.transform, tf_world_to_gt_transform);
 
-          geometry_msgs::msg::Pose pose;
-          pose.position.x = transform.transform.translation.x;
-          pose.position.y = transform.transform.translation.y;
-          pose.position.z = transform.transform.translation.z;
-          pose.orientation.w = 1.0;
+          // Get transform from base_link to marker
+          geometry_msgs::msg::TransformStamped tf_base_to_marker = tf_buffer_->lookupTransform(
+            robot_namespace + "/base_link", robot_namespace + "/" + marker_name,
+            tf2::TimePointZero);
 
-          // print marker pose
+          tf2::Transform tf_base_to_marker_transform;
+          tf2::fromMsg(tf_base_to_marker.transform, tf_base_to_marker_transform);
+
+          // Combine the transforms to get marker position in gazebo_world
+          tf2::Transform tf_marker_in_world =
+            tf_world_to_gt_transform * tf_base_to_marker_transform;
+
+          geometry_msgs::msg::Pose marker_pose_in_world;
+          marker_pose_in_world.position.x = tf_marker_in_world.getOrigin().x();
+          marker_pose_in_world.position.y = tf_marker_in_world.getOrigin().y();
+          marker_pose_in_world.position.z = tf_marker_in_world.getOrigin().z();
+          marker_pose_in_world.orientation = tf2::toMsg(tf_marker_in_world.getRotation());
+
           RCLCPP_INFO(
-            this->get_logger(), "[%s][%s] Position in %s frame: x=%.2f, y=%.2f, z=%.2f",
-            robot_namespace.c_str(), marker_name.c_str(), target_frame.c_str(), pose.position.x,
-            pose.position.y, pose.position.z);
+            this->get_logger(), "marker in gazebo_world: x=%.2f, y=%.2f, z=%.2f",
+            marker_pose_in_world.position.x, marker_pose_in_world.position.y,
+            marker_pose_in_world.position.z);
 
-          all_marker_positions.poses.push_back(pose);
+          all_marker_positions.poses.push_back(marker_pose_in_world);
         } catch (const tf2::TransformException & ex) {
           RCLCPP_WARN(
             this->get_logger(), "Could not get transform for %s/%s: %s", robot_namespace.c_str(),
