@@ -30,7 +30,8 @@ public:
 
     // Timer to regularly publish all marker positions
     timer_ = this->create_wall_timer(
-      std::chrono::seconds(1), std::bind(&MarkerPositionNode::publish_marker_positions, this));
+      std::chrono::milliseconds(50),
+      std::bind(&MarkerPositionNode::publish_marker_positions, this));
   }
 
 private:
@@ -74,7 +75,7 @@ private:
           marker_pose_in_world.position.z = tf_marker_in_world.getOrigin().z();
           marker_pose_in_world.orientation = tf2::toMsg(tf_marker_in_world.getRotation());
 
-          RCLCPP_INFO(
+          RCLCPP_DEBUG(
             this->get_logger(), "marker in gazebo_world: x=%.2f, y=%.2f, z=%.2f",
             marker_pose_in_world.position.x, marker_pose_in_world.position.y,
             marker_pose_in_world.position.z);

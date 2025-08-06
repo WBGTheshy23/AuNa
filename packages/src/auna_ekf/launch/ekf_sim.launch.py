@@ -33,7 +33,10 @@ def include_launch_description(context: LaunchContext):
         output='screen',
         parameters=[
             ekf_local_config_path,
-            {'use_sim_time': use_sim_time}
+            {'use_sim_time': True}
+        ],
+        remappings=[
+            ('odometry/filtered', 'odometry/ekf/local')  # Unique output topic
         ]
     )
 
@@ -44,7 +47,10 @@ def include_launch_description(context: LaunchContext):
         output='screen',
         parameters=[
             ekf_global_config_path,
-            {'use_sim_time': use_sim_time}
+            {'use_sim_time': False}
+        ],
+        remappings=[
+            ('odometry/filtered', 'odometry/ekf/global')  # Unique output topic
         ]
     )
 
@@ -67,7 +73,13 @@ def generate_launch_description():
         default_value='true',
         description='Use simulation (Gazebo) clock if true'
     )
+    declare_robot_index_arg = DeclareLaunchArgument(
+        'robot_index',
+        default_value='1',
+        description='Use simulation (Gazebo) clock if true'
+    )
     return LaunchDescription([
         declare_use_sim_time_arg,
+        declare_robot_index_arg,
         OpaqueFunction(function=include_launch_description)
     ])

@@ -84,7 +84,7 @@ public:
     sub_ = this->create_subscription<visualization_msgs::msg::MarkerArray>(
       "/car_id", 10, std::bind(&TrackerNode::callback, this, std::placeholders::_1));
     marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/tracked_cars", 10);
-    RCLCPP_INFO(this->get_logger(), "TrackerNode started.");
+    RCLCPP_DEBUG(this->get_logger(), "TrackerNode started.");
   }
 
 private:
@@ -158,6 +158,7 @@ private:
 
   void callback(const visualization_msgs::msg::MarkerArray::SharedPtr msg)
   {
+    RCLCPP_DEBUG(this->get_logger(), "callback started");
     std::vector<geometry_msgs::msg::Point> positions;
     std::vector<double> yaws;
     positions.reserve(msg->markers.size());
@@ -168,15 +169,15 @@ private:
       yaws.push_back(getYaw(marker.pose.orientation));
     }
 
-    if (!initialized_) {
+    if (!initialized_ && msg->markers.size() == 3) {
       initializeTracks(msg);
-    } else {
+    } else if (initialized_) {
       updateTracks(positions, yaws);
     }
 
-    RCLCPP_INFO(this->get_logger(), "Tracked cars:");
+    RCLCPP_DEBUG(this->get_logger(), "Tracked cars:");
     for (const auto & car : tracked_cars_) {
-      RCLCPP_INFO(
+      RCLCPP_DEBUG(
         this->get_logger(), "ID: %d, Position: (%.2f, %.2f, %.2f), Yaw: %.2f, Visible: %s",
         car.track_id, car.position.x, car.position.y, car.position.z, car.yaw,
         car.visible ? "true" : "false");
@@ -196,7 +197,7 @@ private:
       if (car_publishers_.find(car.track_id) == car_publishers_.end()) {
         car_publishers_[car.track_id] =
           this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(topic_name, 10);
-        RCLCPP_INFO(this->get_logger(), "Created publisher for topic: %s", topic_name.c_str());
+        RCLCPP_DEBUG(this->get_logger(), "Created publisher for topic: %s", topic_name.c_str());
       }
 
       // Construct PoseWithCovarianceStamped message

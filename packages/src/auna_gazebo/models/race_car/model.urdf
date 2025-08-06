@@ -2,9 +2,8 @@
 <robot name="sam_bot" xmlns:xacro="http://ros.org/wiki/xacro">
   
   <!-- Arguments -->
-  <xacro:arg name="namespace" default=""/>
-  <xacro:arg name="robot_index" default="1"/>
- 
+  <!-- <xacro:arg name="namespace" default=""/> -->
+
   <!-- Properties -->
   <xacro:property name="cameraSizeL" value="0.03"/>
   <xacro:property name="cameraSizeB" value="0.03"/>
@@ -13,6 +12,11 @@
 
   <xacro:property name="hokuyoSize" value="0.1"/>
   <xacro:property name="hokuyoMass" value="0.1"/>
+
+  <xacro:property name="gpsSizeL" value="0.05"/>
+  <xacro:property name="gpsSizeB" value="0.05"/>
+  <xacro:property name="gpsSizeH" value="0.05"/>
+  <xacro:property name="gpsMass" value="0.05"/>
 
   <xacro:property name="bodySizeL" value="0.49"/>
   <xacro:property name="bodySizeB" value="0.18"/>
@@ -515,8 +519,46 @@
     <child link="laser"/>
   </joint>
 
+  <!-- GPS Link -->
+  <link name="gps_link">
+    <inertial>
+      <mass value="${gpsMass}" />
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <xacro:box_inertia m="${gpsMass}" l="${gpsSizeL}" b="${gpsSizeB}" h="${gpsSizeH}" />
+    </inertial>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${gpsSizeL} ${gpsSizeB} ${gpsSizeH}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${gpsSizeL} ${gpsSizeB} ${gpsSizeH}"/>
+      </geometry>
+      <material name="black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="gps_joint" type="fixed">
+    <origin xyz="-0.1 0 0.15" rpy="0 0 0"/>
+    <parent link="chassis"/>
+    <child link="gps_link"/>
+  </joint>
+
   <!-- IMU -->
-  <link name="imu_link" />
+  <link name="imu_link">
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <xacro:box_inertia m="0.01" l="0.01" b="0.01" h="0.01" />
+    </inertial>
+  </link>
 
   <joint name="imu_joint" type="fixed">
     <axis xyz="0 1 0" />
@@ -524,6 +566,66 @@
     <parent link="chassis"/>
     <child link="imu_link"/>
   </joint>
+  
+  <!-- IMU Sensor -->
+  <gazebo reference="imu_link">
+    <sensor name="imu_sensor" type="imu">
+      <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+        <ros>
+          <remapping>~/out:=imu</remapping>
+        </ros>
+        <initial_orientation_as_reference>false</initial_orientation_as_reference>
+        <frame_name>imu_link</frame_name>
+        <!-- Remove redundant general noise parameter -->
+        <orientation_noise>
+          <x>
+            <mean>0.0</mean>
+            <stddev>0.001</stddev>
+          </x>
+          <y>
+            <mean>0.0</mean>
+            <stddev>0.001</stddev>
+          </y>
+          <z>
+            <mean>0.0</mean>
+            <stddev>0.001</stddev>
+          </z>
+        </orientation_noise>
+        <angular_velocity_noise>
+          <x>
+            <mean>0.0</mean>
+            <stddev>0.001</stddev>
+          </x>
+          <y>
+            <mean>0.0</mean>
+            <stddev>0.001</stddev>
+          </y>
+          <z>
+            <mean>0.0</mean>
+            <stddev>0.001</stddev>
+          </z>
+        </angular_velocity_noise>
+        <!-- Add linear acceleration noise -->
+        <linear_acceleration_noise>
+          <x>
+            <mean>0.0</mean>
+            <stddev>0.0017</stddev>
+          </x>
+          <y>
+            <mean>0.0</mean>
+            <stddev>0.0017</stddev>
+          </y>
+          <z>
+            <mean>0.0</mean>
+            <stddev>0.0017</stddev>
+          </z>
+        </linear_acceleration_noise>
+      </plugin>
+      <always_on>true</always_on>
+      <update_rate>200</update_rate>
+      <visualize>true</visualize>
+    </sensor>
+  </gazebo>
   
   <!-- Plugins --> 
 

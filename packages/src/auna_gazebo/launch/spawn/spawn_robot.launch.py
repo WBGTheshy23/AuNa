@@ -56,8 +56,8 @@ def include_launch_description(context: LaunchContext):
                          '_robot_state_publisher.launch.py')
         ),
         launch_arguments={
-            'use_sim_time': use_sim_time,
             'robot_index': robot_index,
+            'use_sim_time': use_sim_time,
         }.items()
     )
 

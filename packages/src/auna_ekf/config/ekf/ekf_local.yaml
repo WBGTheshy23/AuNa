@@ -1,7 +1,7 @@
 /**/ekf_local_node:
   ros__parameters:
     frequency: 30.0
-    sensor_timeout: 1.0
+    sensor_timeout: 0.0
     two_d_mode: true
     print_diagnostics: true
 
@@ -31,4 +31,4 @@
     imu0_differential: false
     imu0_relative: false
     imu0_queue_size: 5
-    imu0_remove_gravitational_acceleration: false
+    imu0_remove_gravitational_acceleration: true

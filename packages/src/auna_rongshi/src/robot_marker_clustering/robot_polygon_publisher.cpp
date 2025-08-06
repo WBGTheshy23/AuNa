@@ -27,7 +27,7 @@ public:
       "/car_id", 10,
       std::bind(&CarPolygonPublisherNode::carIdCallback, this, std::placeholders::_1));
 
-    RCLCPP_INFO(this->get_logger(), "Car Polygon Publisher Node started.");
+    RCLCPP_DEBUG(this->get_logger(), "Car Polygon Publisher Node started.");
   }
 
 private:
@@ -92,7 +92,7 @@ private:
       if (polygon_publishers_.find(topic_name) == polygon_publishers_.end()) {
         polygon_publishers_[topic_name] =
           this->create_publisher<geometry_msgs::msg::PolygonStamped>(topic_name, 10);
-        RCLCPP_INFO(this->get_logger(), "Created publisher for topic: %s", topic_name.c_str());
+        RCLCPP_DEBUG(this->get_logger(), "Created publisher for topic: %s", topic_name.c_str());
       }
 
       // Publish the polygon
@@ -105,7 +105,7 @@ private:
   void carIdCallback(const visualization_msgs::msg::MarkerArray::SharedPtr msg)
   {
     for (const auto & marker : msg->markers) {
-      RCLCPP_INFO(this->get_logger(), "Received car ID: %d", marker.id);
+      RCLCPP_DEBUG(this->get_logger(), "Received car ID: %d", marker.id);
     }
   }
 };

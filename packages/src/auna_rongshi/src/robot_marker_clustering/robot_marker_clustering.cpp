@@ -37,7 +37,7 @@ public:
     // Publisher for visualization markers (car IDs) and hungarian algorithm
     publisher_marker = this->create_publisher<visualization_msgs::msg::MarkerArray>("/car_id", 10);
 
-    RCLCPP_INFO(this->get_logger(), "Marker clustering node started.");
+    RCLCPP_DEBUG(this->get_logger(), "Marker clustering node started.");
   }
 
 private:
@@ -160,7 +160,7 @@ private:
               {front_dir, static_cast<int>(i), static_cast<int>(j), center_idx, front_markers});
 
             int total_markers = 2 + 1 + static_cast<int>(front_markers.size());
-            RCLCPP_INFO(
+            RCLCPP_DEBUG(
               this->get_logger(), "Cluster %d: Detected car with %d markers (rear_center: %d,%d)",
               cluster_id, total_markers, rear_center.x(), rear_center.y());
           }
@@ -180,7 +180,7 @@ private:
           this->get_logger(), "Cluster %d has unassigned markers, possible mismatch.", cluster_id);
         break;
       } else {
-        RCLCPP_INFO(
+        RCLCPP_DEBUG(
           this->get_logger(), "Cluster %d: Total detected cars: %ld", cluster_id, cars.size());
 
         for (const auto & car : cars) {

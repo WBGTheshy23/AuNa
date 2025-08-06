@@ -101,7 +101,7 @@ private:
       position_error += -2.987;  // Adjust for robot3's specific error
     }
 
-    RCLCPP_INFO(
+    RCLCPP_DEBUG(
       this->get_logger(), "[%s] Pos error: %.3f m, Yaw error: %.2f°", robot_name.c_str(),
       position_error, yaw_error);
 

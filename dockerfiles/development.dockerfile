@@ -45,9 +45,6 @@ RUN find /tmp/toml -name "pyproject.toml" -exec pip install -e {} \; && \
 # Source the workspace in bashrc if setup.bash exists
 RUN echo 'if [ -f /home/ubuntu/workspace/packages/install/setup.bash ]; then source /home/ubuntu/workspace/packages/install/setup.bash; fi' >> /home/ubuntu/.bashrc
 
-# Fix ownership after COPY (COPY creates files owned by root)
-RUN sudo chown -R ubuntu:ubuntu /home/ubuntu/workspace
-
 SHELL ["/bin/bash", "-c"]
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["/bin/bash"]
