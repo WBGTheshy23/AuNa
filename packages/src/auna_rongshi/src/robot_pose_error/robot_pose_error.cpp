@@ -17,13 +17,13 @@ class PoseErrorNode : public rclcpp::Node
 public:
   PoseErrorNode() : Node("pose_error_node")
   {
-    // Open CSV file for writing
-    csv_file_.open("pose_errors.csv", std::ios::out | std::ios::trunc);
-    if (csv_file_.is_open()) {
-      csv_file_ << "timestamp,robot_name,position_error,yaw_error_deg\n";
-    } else {
-      RCLCPP_ERROR(this->get_logger(), "Failed to open CSV file for writing");
-    }
+    // // Open CSV file for writing
+    // csv_file_.open("pose_errors.csv", std::ios::out | std::ios::trunc);
+    // if (csv_file_.is_open()) {
+    //   csv_file_ << "timestamp,robot_name,position_error,yaw_error_deg\n";
+    // } else {
+    //   RCLCPP_ERROR(this->get_logger(), "Failed to open CSV file for writing");
+    // }
 
     for (const auto & robot_name : {"robot1", "robot2", "robot3"}) {
       std::string ekf_topic = "/" + std::string(robot_name) + "/global_pose";
@@ -49,12 +49,12 @@ public:
     }
   }
 
-  ~PoseErrorNode()
-  {
-    if (csv_file_.is_open()) {
-      csv_file_.close();
-    }
-  }
+  // ~PoseErrorNode()
+  // {
+  //   if (csv_file_.is_open()) {
+  //     csv_file_.close();
+  //   }
+  // }
 
 private:
   std::unordered_map<std::string, geometry_msgs::msg::PoseStamped> ekf_poses_;
@@ -63,7 +63,7 @@ private:
   std::vector<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr> ekf_subs_;
   std::vector<rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr> gt_subs_;
 
-  std::ofstream csv_file_;
+  // std::ofstream csv_file_;
 
   void computeError(const std::string & robot_name)
   {
@@ -91,27 +91,20 @@ private:
 
     double yaw_error = std::fabs(yaw1 - yaw2);
     yaw_error = std::fmod(yaw_error + M_PI, 2 * M_PI) - M_PI;  // wrap [-π, π]
-    yaw_error = std::abs(yaw_error * 180.0 / M_PI);            // 转角度
+    yaw_error = std::abs(yaw_error * 180.0 / M_PI);            // yaw error in degrees
 
-    if (robot_name == "robot1") {
-      position_error += -0.986;  // Adjust for robot1's specific error
-    } else if (robot_name == "robot2") {
-      position_error += -1.985;  // Adjust for robot2's specific error
-    } else if (robot_name == "robot3") {
-      position_error += -2.987;  // Adjust for robot3's specific error
-    }
-
-    RCLCPP_DEBUG(
+    RCLCPP_INFO(
       this->get_logger(), "[%s] Pos error: %.3f m, Yaw error: %.2f°", robot_name.c_str(),
       position_error, yaw_error);
 
-    // Write to CSV file
-    if (csv_file_.is_open()) {
-      rclcpp::Time now = this->get_clock()->now();
-      csv_file_ << now.seconds() << "," << robot_name << "," << position_error << "," << yaw_error
-                << "\n";
-      csv_file_.flush();
-    }
+    // // Write to CSV file
+    // if (csv_file_.is_open()) {
+    //   rclcpp::Time now = this->get_clock()->now();
+    //   csv_file_ << now.seconds() << "," << robot_name << "," << position_error << "," <<
+    //   yaw_error
+    //             << "\n";
+    //   csv_file_.flush();
+    // }
   }
 };
 

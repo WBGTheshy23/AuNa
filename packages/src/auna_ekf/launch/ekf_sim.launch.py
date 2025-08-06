@@ -47,7 +47,7 @@ def include_launch_description(context: LaunchContext):
         output='screen',
         parameters=[
             ekf_global_config_path,
-            {'use_sim_time': False}
+            {'use_sim_time': True}
         ],
         remappings=[
             ('odometry/filtered', 'odometry/ekf/global')  # Unique output topic

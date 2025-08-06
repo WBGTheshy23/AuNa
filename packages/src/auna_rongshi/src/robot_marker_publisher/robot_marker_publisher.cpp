@@ -82,9 +82,9 @@ private:
 
           all_marker_positions.poses.push_back(marker_pose_in_world);
         } catch (const tf2::TransformException & ex) {
-          RCLCPP_WARN(
-            this->get_logger(), "Could not get transform for %s/%s: %s", robot_namespace.c_str(),
-            marker_name.c_str(), ex.what());
+          // RCLCPP_WARN(
+          //   this->get_logger(), "Could not get transform for %s/%s: %s", robot_namespace.c_str(),
+          //   marker_name.c_str(), ex.what());
         }
       }
     }
