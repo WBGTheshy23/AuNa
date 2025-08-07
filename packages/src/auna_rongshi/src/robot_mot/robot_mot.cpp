@@ -83,7 +83,9 @@ public:
   {
     sub_ = this->create_subscription<visualization_msgs::msg::MarkerArray>(
       "/car_id", 10, std::bind(&TrackerNode::callback, this, std::placeholders::_1));
+
     marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/tracked_cars", 10);
+
     RCLCPP_DEBUG(this->get_logger(), "TrackerNode started.");
   }
 
@@ -159,19 +161,19 @@ private:
   void callback(const visualization_msgs::msg::MarkerArray::SharedPtr msg)
   {
     RCLCPP_DEBUG(this->get_logger(), "callback started");
-    std::vector<geometry_msgs::msg::Point> positions;
-    std::vector<double> yaws;
-    positions.reserve(msg->markers.size());
-    yaws.reserve(msg->markers.size());
-
-    for (const auto & marker : msg->markers) {
-      positions.push_back(marker.pose.position);
-      yaws.push_back(getYaw(marker.pose.orientation));
-    }
 
     if (!initialized_ && msg->markers.size() == 3) {
       initializeTracks(msg);
     } else if (initialized_) {
+      std::vector<geometry_msgs::msg::Point> positions;
+      std::vector<double> yaws;
+      positions.reserve(msg->markers.size());
+      yaws.reserve(msg->markers.size());
+
+      for (const auto & marker : msg->markers) {
+        positions.push_back(marker.pose.position);
+        yaws.push_back(getYaw(marker.pose.orientation));
+      }
       updateTracks(positions, yaws);
     }
 
@@ -213,16 +215,6 @@ private:
       pose_cov_msg.pose.pose.orientation.y = q.y();
       pose_cov_msg.pose.pose.orientation.z = q.z();
       pose_cov_msg.pose.pose.orientation.w = q.w();
-
-      // Fill in covariance matrix (6x6 row-major)
-      // Here we assume low uncertainty on X, Y, and Yaw; adjust as needed
-      for (int i = 0; i < 36; ++i) {
-        pose_cov_msg.pose.covariance[i] = 0.0;
-      }
-      pose_cov_msg.pose.covariance[0] = 0.05 * 0.05;  // X variance
-      pose_cov_msg.pose.covariance[7] = 0.05 * 0.05;  // Y variance
-      pose_cov_msg.pose.covariance[35] = 0.1 * 0.1;   // Yaw variance
-
       // Publish the message
       car_publishers_[car.track_id]->publish(pose_cov_msg);
     }

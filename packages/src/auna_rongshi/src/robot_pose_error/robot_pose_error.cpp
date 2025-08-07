@@ -89,9 +89,12 @@ private:
     tf2::Matrix3x3(q_ekf).getRPY(roll1, pitch1, yaw1);
     tf2::Matrix3x3(q_gt).getRPY(roll2, pitch2, yaw2);
 
-    double yaw_error = std::fabs(yaw1 - yaw2);
-    yaw_error = std::fmod(yaw_error + M_PI, 2 * M_PI) - M_PI;  // wrap [-π, π]
-    yaw_error = std::abs(yaw_error * 180.0 / M_PI);            // yaw error in degrees
+    // Compute yaw error in degrees (wrapped to [-180°, 180°])
+    double yaw_diff = std::fmod(yaw1 - yaw2 + M_PI, 2.0 * M_PI);  // wrap to [0, 2π)
+    if (yaw_diff < 0) yaw_diff += 2.0 * M_PI;                     // handle negative wrap
+    yaw_diff -= M_PI;                                             // shift to [-π, π]
+
+    double yaw_error = std::abs(yaw_diff * 180.0 / M_PI);  // convert to degrees
 
     RCLCPP_INFO(
       this->get_logger(), "[%s] Pos error: %.3f m, Yaw error: %.2f°", robot_name.c_str(),

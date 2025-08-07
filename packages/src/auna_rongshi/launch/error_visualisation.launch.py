@@ -1,14 +1,14 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# 读CSV
+# read the CSV file
 df = pd.read_csv('pose_errors.csv')
 
 robots = df['robot_name'].unique()
 
 plt.figure(figsize=(14, 6))
 
-# 位置误差 subplot
+# postion error subplot
 plt.subplot(1, 2, 1)
 for robot in robots:
     robot_data = df[df['robot_name'] == robot]
@@ -19,7 +19,7 @@ plt.title('Position Error Over Time')
 plt.legend()
 plt.grid(True)
 
-# 航向误差 subplot
+# yaw error subplot
 plt.subplot(1, 2, 2)
 for robot in robots:
     robot_data = df[df['robot_name'] == robot]
@@ -32,8 +32,8 @@ plt.grid(True)
 
 plt.tight_layout()
 
-# 保存图片文件
+# save the figure
 plt.savefig('pose_error_comparison.png', dpi=300)
 
-# 显示图形（可选）
+# show the plot
 plt.show()

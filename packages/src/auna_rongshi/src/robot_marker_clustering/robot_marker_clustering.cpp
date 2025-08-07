@@ -55,11 +55,6 @@ private:
 
   double distance(const Eigen::Vector2d & a, const Eigen::Vector2d & b) { return (a - b).norm(); }
 
-  Eigen::Vector2d midpoint(const Eigen::Vector2d & a, const Eigen::Vector2d & b)
-  {
-    return (a + b) / 2.0;
-  }
-
   Eigen::Vector2d direction(const Eigen::Vector2d & from, const Eigen::Vector2d & to)
   {
     Eigen::Vector2d dir = to - from;
@@ -103,7 +98,7 @@ private:
 
           double rear_distance = distance(cluster_points[i], cluster_points[j]);
           if (std::abs(rear_distance - 0.05) > 0.01) continue;
-          Eigen::Vector2d rear_center = midpoint(cluster_points[i], cluster_points[j]);
+          Eigen::Vector2d rear_center = (cluster_points[i] + cluster_points[j]) / 2.0;
           Eigen::Vector2d dir = direction(cluster_points[i], cluster_points[j]);
 
           // Try two possible front directions (perpendicular to rear axis)
@@ -210,10 +205,7 @@ private:
           id_marker.pose.position.y = cluster_points[car.center].y();
           id_marker.pose.position.z = 1.0;
 
-          id_marker.pose.orientation.x = 0.0;
-          id_marker.pose.orientation.y = 0.0;
-          id_marker.pose.orientation.z = 0.0;
-          id_marker.pose.orientation.w = 1.0;
+          id_marker.pose.orientation = pose.orientation;
 
           id_marker.text = std::to_string(id_marker.id);
           id_marker.scale.z = 0.5;
