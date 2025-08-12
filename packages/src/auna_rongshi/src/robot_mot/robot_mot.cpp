@@ -4,10 +4,12 @@
 
 #include "geometry_msgs/msg/point.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
 #include <cmath>
 #include <limits>
+#include <unordered_map>
 #include <vector>
 
 // Hungarian Algorithm for assignment
@@ -81,6 +83,18 @@ class TrackerNode : public rclcpp::Node
 public:
   TrackerNode() : Node("tracker_node")
   {
+    sub1_ = create_subscription<geometry_msgs::msg::PoseStamped>(
+      "/robot1/global_pose", 10,
+      std::bind(&TrackerNode::robot1Callback, this, std::placeholders::_1));
+
+    sub2_ = create_subscription<geometry_msgs::msg::PoseStamped>(
+      "/robot2/global_pose", 10,
+      std::bind(&TrackerNode::robot2Callback, this, std::placeholders::_1));
+
+    sub3_ = create_subscription<geometry_msgs::msg::PoseStamped>(
+      "/robot3/global_pose", 10,
+      std::bind(&TrackerNode::robot3Callback, this, std::placeholders::_1));
+
     sub_ = this->create_subscription<visualization_msgs::msg::MarkerArray>(
       "/car_id", 10, std::bind(&TrackerNode::callback, this, std::placeholders::_1));
 
@@ -95,6 +109,12 @@ private:
   std::unordered_map<
     int, rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr>
     car_publishers_;
+
+  rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr sub1_, sub2_, sub3_;
+
+  std::array<geometry_msgs::msg::Point, 3> poses_;
+  std::array<double, 3> yaws_;
+  std::array<bool, 3> received_ = {false, false, false};
 
   std::vector<Car> tracked_cars_;
   bool initialized_ = false;
@@ -165,16 +185,24 @@ private:
     if (!initialized_ && msg->markers.size() == 3) {
       initializeTracks(msg);
     } else if (initialized_) {
-      std::vector<geometry_msgs::msg::Point> positions;
-      std::vector<double> yaws;
-      positions.reserve(msg->markers.size());
-      yaws.reserve(msg->markers.size());
-
-      for (const auto & marker : msg->markers) {
-        positions.push_back(marker.pose.position);
-        yaws.push_back(getYaw(marker.pose.orientation));
+      if (received_[0] && received_[1] && received_[2]) {
+        std::vector<geometry_msgs::msg::Point> pos_vec(poses_.begin(), poses_.end());
+        std::vector<double> yaw_vec(yaws_.begin(), yaws_.end());
+        updateTracks(pos_vec, yaw_vec);
+        received_[0] = false;
+        received_[1] = false;
+        received_[2] = false;
       }
-      updateTracks(positions, yaws);
+      // std::vector<geometry_msgs::msg::Point> positions;
+      // std::vector<double> yaws;
+      // positions.reserve(msg->markers.size());
+      // yaws.reserve(msg->markers.size());
+
+      // for (const auto & marker : msg->markers) {
+      //   positions.push_back(marker.pose.position);
+      //   yaws.push_back(getYaw(marker.pose.orientation));
+      // }
+      // updateTracks(positions, yaws);
     }
 
     RCLCPP_DEBUG(this->get_logger(), "Tracked cars:");
@@ -187,6 +215,27 @@ private:
 
     publishMarkers();
     publishCarTopics();
+  }
+
+  void robot1Callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
+  {
+    poses_[0] = msg->pose.position;
+    yaws_[0] = getYaw(msg->pose.orientation);
+    received_[0] = true;
+  }
+
+  void robot2Callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
+  {
+    poses_[1] = msg->pose.position;
+    yaws_[1] = getYaw(msg->pose.orientation);
+    received_[1] = true;
+  }
+
+  void robot3Callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
+  {
+    poses_[2] = msg->pose.position;
+    yaws_[2] = getYaw(msg->pose.orientation);
+    received_[2] = true;
   }
 
   void publishCarTopics()
@@ -215,6 +264,11 @@ private:
       pose_cov_msg.pose.pose.orientation.y = q.y();
       pose_cov_msg.pose.pose.orientation.z = q.z();
       pose_cov_msg.pose.pose.orientation.w = q.w();
+      // Set covariance values
+      pose_cov_msg.pose.covariance = {0.01, 0, 0,     0, 0,     0, 0, 0.01, 0, 0,     0, 0,
+                                      0,    0, 999.0, 0, 0,     0, 0, 0,    0, 999.0, 0, 0,
+                                      0,    0, 0,     0, 999.0, 0, 0, 0,    0, 0,     0, 0.01};
+
       // Publish the message
       car_publishers_[car.track_id]->publish(pose_cov_msg);
     }
