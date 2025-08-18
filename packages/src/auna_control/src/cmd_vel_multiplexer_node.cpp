@@ -43,6 +43,7 @@ CmdVelMultiplexerNode::CmdVelMultiplexerNode()
   this->declare_parameter("wheelbase", 0.32, param_descriptor);
   this->declare_parameter("convert_yaw_to_steering_angle", false, param_descriptor);
   this->declare_parameter("topic_file", "", param_descriptor);
+  this->declare_parameter("initial_source", "OFF", param_descriptor);
 
   std::string topic_file = this->get_parameter("topic_file").as_string();
   if (topic_file.empty()) {
@@ -63,7 +64,30 @@ CmdVelMultiplexerNode::CmdVelMultiplexerNode()
   wheelbase_ = this->get_parameter("wheelbase").as_double();
   convert_yaw_to_steering_angle_ = this->get_parameter("convert_yaw_to_steering_angle").as_bool();
 
+  // Determine initial source after parsing inputs
+  std::string requested_initial_source = this->get_parameter("initial_source").as_string();
   current_source_ = "OFF";
+  if (requested_initial_source != "OFF") {
+    bool found = false;
+    for (const auto & src : input_sources_) {
+      if (src.name == requested_initial_source) {
+        found = true;
+        current_source_ = requested_initial_source;
+        RCLCPP_INFO(
+          this->get_logger(), "Initial cmd_vel source set to '%s'", current_source_.c_str());
+        break;
+      }
+    }
+    if (!found) {
+      RCLCPP_WARN(
+        this->get_logger(),
+        "initial_source parameter '%s' not found in input sources. Starting with OFF.",
+        requested_initial_source.c_str());
+      RCLCPP_INFO(this->get_logger(), "Initial cmd_vel source set to OFF");
+    }
+  } else {
+    RCLCPP_INFO(this->get_logger(), "Initial cmd_vel source set to OFF");
+  }
   estop_active_ = false;
 
   parameters_callback_handle_ = this->add_on_set_parameters_callback(
@@ -161,6 +185,11 @@ void CmdVelMultiplexerNode::setupSubscribers()
         source.topic, 10, [this, source_name = source.name](const TwistStamped::SharedPtr msg) {
           this->twist_callback(msg, source_name);
         });
+    } else if (source.type == "Twist") {
+      cmd_vel_subscribers_[source.name] = this->create_subscription<Twist>(
+        source.topic, 10, [this, source_name = source.name](const Twist::SharedPtr msg) {
+          this->twist_regular_callback(msg, source_name);
+        });
     } else if (source.type == "AckermannDriveStamped") {
       cmd_vel_subscribers_[source.name] = this->create_subscription<AckermannDriveStamped>(
         source.topic, 10,
@@ -173,6 +202,30 @@ void CmdVelMultiplexerNode::setupSubscribers()
       source.topic.c_str());
     last_received_msgs_[source.name] = createZeroAckermann();
   }
+}
+
+void CmdVelMultiplexerNode::twist_regular_callback(
+  const Twist::SharedPtr msg, const std::string & source_name)
+{
+  RCLCPP_DEBUG(
+    this->get_logger(),
+    "Received Twist (regular) message from source: %s, linear.x: %f, angular.z: %f",
+    source_name.c_str(), msg->linear.x, msg->angular.z);
+  last_received_msgs_[source_name] = twist_regular_to_ackermann(msg);
+  RCLCPP_DEBUG(
+    this->get_logger(), "Stored in last_received_msgs_[%s]: speed=%f, steering_angle=%f",
+    source_name.c_str(), last_received_msgs_[source_name].drive.speed,
+    last_received_msgs_[source_name].drive.steering_angle);
+}
+
+AckermannDriveStamped CmdVelMultiplexerNode::twist_regular_to_ackermann(
+  const Twist::SharedPtr & twist_msg)
+{
+  AckermannDriveStamped ackermann_msg;
+  ackermann_msg.header.stamp = this->now();
+  ackermann_msg.drive.speed = twist_msg->linear.x;
+  ackermann_msg.drive.steering_angle = twist_msg->angular.z;
+  return ackermann_msg;
 }
 
 void CmdVelMultiplexerNode::twist_callback(

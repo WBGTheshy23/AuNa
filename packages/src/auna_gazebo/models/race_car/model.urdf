@@ -155,7 +155,7 @@
   <!-- Marker_1 (Red) - Front center -->
   <link name="marker_1">
     <inertial>
-      <mass value="0.01" />
+      <mass value="0.0" />
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
     </inertial>
@@ -188,7 +188,7 @@
   <!-- Marker_2 (Green) - Rear left -->
   <link name="marker_2">
     <inertial>
-      <mass value="0.01" />
+      <mass value="0.0" />
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
     </inertial>
@@ -221,7 +221,7 @@
   <!-- Marker_3 (Blue) - Rear right -->
   <link name="marker_3">
     <inertial>
-      <mass value="0.01" />
+      <mass value="0.0" />
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
     </inertial>
@@ -254,7 +254,7 @@
   <!-- Marker_4 (Blue) - Front -->
   <link name="marker_4">
     <inertial>
-      <mass value="0.01" />
+      <mass value="0.0" />
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
     </inertial>
@@ -288,7 +288,7 @@
     <!-- Marker_5 (Blue) - Front -->
     <link name="marker_5">
       <inertial>
-        <mass value="0.01" />
+        <mass value="0.0" />
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
       </inertial>
@@ -323,7 +323,7 @@
     <!-- Marker_6 (Blue) - Front -->
     <link name="marker_6">
       <inertial>
-        <mass value="0.01" />
+        <mass value="0.0" />
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
       </inertial>
@@ -358,7 +358,7 @@
     <!-- Marker_7 (Blue) - Front -->
     <link name="marker_7">
       <inertial>
-        <mass value="0.01" />
+        <mass value="0.0" />
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
       </inertial>

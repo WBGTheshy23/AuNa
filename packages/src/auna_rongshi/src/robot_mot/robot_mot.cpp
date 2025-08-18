@@ -185,24 +185,24 @@ private:
     if (!initialized_ && msg->markers.size() == 3) {
       initializeTracks(msg);
     } else if (initialized_) {
-      if (received_[0] && received_[1] && received_[2]) {
-        std::vector<geometry_msgs::msg::Point> pos_vec(poses_.begin(), poses_.end());
-        std::vector<double> yaw_vec(yaws_.begin(), yaws_.end());
-        updateTracks(pos_vec, yaw_vec);
-        received_[0] = false;
-        received_[1] = false;
-        received_[2] = false;
-      }
-      // std::vector<geometry_msgs::msg::Point> positions;
-      // std::vector<double> yaws;
-      // positions.reserve(msg->markers.size());
-      // yaws.reserve(msg->markers.size());
-
-      // for (const auto & marker : msg->markers) {
-      //   positions.push_back(marker.pose.position);
-      //   yaws.push_back(getYaw(marker.pose.orientation));
+      // if (received_[0] && received_[1] && received_[2]) {
+      //   std::vector<geometry_msgs::msg::Point> pos_vec(poses_.begin(), poses_.end());
+      //   std::vector<double> yaw_vec(yaws_.begin(), yaws_.end());
+      //   updateTracks(pos_vec, yaw_vec);
+      //   received_[0] = false;
+      //   received_[1] = false;
+      //   received_[2] = false;
       // }
-      // updateTracks(positions, yaws);
+      std::vector<geometry_msgs::msg::Point> positions;
+      std::vector<double> yaws;
+      positions.reserve(msg->markers.size());
+      yaws.reserve(msg->markers.size());
+
+      for (const auto & marker : msg->markers) {
+        positions.push_back(marker.pose.position);
+        yaws.push_back(getYaw(marker.pose.orientation));
+      }
+      updateTracks(positions, yaws);
     }
 
     RCLCPP_DEBUG(this->get_logger(), "Tracked cars:");
@@ -222,6 +222,16 @@ private:
     poses_[0] = msg->pose.position;
     yaws_[0] = getYaw(msg->pose.orientation);
     received_[0] = true;
+    if (initialized_) {
+      if (received_[0] && received_[1] && received_[2]) {
+        std::vector<geometry_msgs::msg::Point> pos_vec(poses_.begin(), poses_.end());
+        std::vector<double> yaw_vec(yaws_.begin(), yaws_.end());
+        updateTracks(pos_vec, yaw_vec);
+        received_[0] = false;
+        received_[1] = false;
+        received_[2] = false;
+      }
+    }
   }
 
   void robot2Callback(const geometry_msgs::msg::PoseStamped::SharedPtr msg)
@@ -265,9 +275,9 @@ private:
       pose_cov_msg.pose.pose.orientation.z = q.z();
       pose_cov_msg.pose.pose.orientation.w = q.w();
       // Set covariance values
-      pose_cov_msg.pose.covariance = {0.01, 0, 0,     0, 0,     0, 0, 0.01, 0, 0,     0, 0,
-                                      0,    0, 999.0, 0, 0,     0, 0, 0,    0, 999.0, 0, 0,
-                                      0,    0, 0,     0, 999.0, 0, 0, 0,    0, 0,     0, 0.01};
+      pose_cov_msg.pose.covariance = {0.01, 0, 0,   0, 0,   0, 0, 0.01, 0, 0,   0, 0,
+                                      0,    0, 1e6, 0, 0,   0, 0, 0,    0, 1e6, 0, 0,
+                                      0,    0, 0,   0, 1e6, 0, 0, 0,    0, 0,   0, 0.01};
 
       // Publish the message
       car_publishers_[car.track_id]->publish(pose_cov_msg);

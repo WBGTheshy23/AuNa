@@ -46,13 +46,22 @@ def generate_launch_description():
         description='Use simulation (Gazebo) clock if true'
     )
 
+    declare_initial_source_arg = DeclareLaunchArgument(
+        'initial_source',
+        default_value='OFF',
+        description='Initial cmd_vel source to activate (symbolic name from topics.yaml, or OFF)'
+    )
+
     cmd_vel_multiplexer_node = Node(
         package='auna_control',
         executable='cmd_vel_multiplexer_node',
         namespace=namespace,
         name='cmd_vel_multiplexer_node',
         output='screen',
-        parameters=[param_file, {"topic_file": topic_file}, {'use_sim_time': use_sim_time}],
+        parameters=[param_file, {"topic_file": topic_file}, {
+            'use_sim_time': use_sim_time,
+            'initial_source': LaunchConfiguration('initial_source')
+        }]
     )
 
     return LaunchDescription([
@@ -61,4 +70,5 @@ def generate_launch_description():
         declare_namespace_arg,
         declare_use_sim_time_arg,
         cmd_vel_multiplexer_node,
+        declare_initial_source_arg,
     ])

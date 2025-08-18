@@ -1,6 +1,6 @@
 import os
 from ament_index_python.packages import get_package_share_directory
-from launch_ros.actions import Node
+from launch_ros.actions import Node, PushRosNamespace
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction, IncludeLaunchDescription
 from launch.launch_context import LaunchContext
@@ -13,20 +13,34 @@ def include_launch_description(context: LaunchContext):
     """Return launch description"""
 
     # Launch Argument Configurations
-    namespace = LaunchConfiguration('namespace')
     cacc_config = LaunchConfiguration('cacc_config')
     waypoint_file_path = LaunchConfiguration('waypoint_file')
+    robot_index = LaunchConfiguration('robot_index')
+    
+    use_waypoints = os.environ.get('USE_WAYPOINTS', 'true').lower() == 'true'
+    
+    # Create robot namespace based on index
+    if int(robot_index.perform(context)) >= 0:
+        namespace = f'robot{robot_index.perform(context)}'
+    else:
+        namespace = ''
 
     launch_description_content = []
+
+    parameters = [yaml_launch.get_yaml_value(cacc_config.perform(
+        context), ['cacc_controller', 'ros__parameters'])]
+    if use_waypoints:
+        parameters.append({'waypoint_file': waypoint_file_path})
+
+    launch_description_content.append(PushRosNamespace(namespace))
 
     launch_description_content.append(
         Node(
             package='auna_cacc',
             executable='cacc_controller',
             name='cacc_controller',
-            namespace=namespace,
             output='screen',
-            parameters=[yaml_launch.get_yaml_value(cacc_config.perform(context), ['cacc_controller', 'ros__parameters']), {'waypoint_file': waypoint_file_path}]
+            parameters=parameters
         )
     )
 
@@ -40,16 +54,17 @@ def generate_launch_description():
     pkg_dir = get_package_share_directory('auna_cacc')
 
     # Config files
-    cacc_config_file_path = os.path.join(pkg_dir, 'config', 'cacc_controller.yaml')
+    cacc_config_file_path = os.path.join(
+        pkg_dir, 'config', 'cacc_controller.yaml')
 
     # Waypoint files
-    waypoint_file_path = os.path.join(pkg_dir, 'config', 'arena_waypoints.csv')
+    waypoint_file_path = os.path.join(pkg_dir, 'config', 'waypoints.csv')
 
     # Launch Arguments
-    namespace_arg = DeclareLaunchArgument(
-        'namespace',
-        default_value='robot',
-        description='Robot namespace'
+    robot_index_arg = DeclareLaunchArgument(
+        'robot_index',
+        default_value='1',
+        description='Robot index'
     )
     cacc_config_arg = DeclareLaunchArgument(
         'cacc_config',
@@ -65,10 +80,11 @@ def generate_launch_description():
     # Launch Description
     launch_description = LaunchDescription()
 
-    launch_description.add_action(namespace_arg)
+    launch_description.add_action(robot_index_arg)
     launch_description.add_action(cacc_config_arg)
     launch_description.add_action(waypoint_file_path_arg)
 
-    launch_description.add_action(OpaqueFunction(function=include_launch_description))
+    launch_description.add_action(OpaqueFunction(
+        function=include_launch_description))
 
     return launch_description

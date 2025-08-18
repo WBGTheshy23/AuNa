@@ -1,12 +1,15 @@
 cmd_vel_multiplexer_node:
   inputs:
+    - type: "AckermannDriveStamped"
+      name: "wallfollowing"
+      topic: "cmd_vel/wallfollowing"
     - type: "TwistStamped"
       name: "teleop"
       topic: "cmd_vel/teleop"
-    - type: "TwistStamped"
+    - type: "Twist"
       name: "cacc"
       topic: "cmd_vel/cacc"
-    - type: "TwistStamped"
+    - type: "Twist"
       name: "nav2"
       topic: "cmd_vel/nav2"
   outputs:

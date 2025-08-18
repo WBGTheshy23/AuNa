@@ -30,7 +30,7 @@ public:
 
     // Timer to regularly publish all marker positions
     timer_ = this->create_wall_timer(
-      std::chrono::milliseconds(50),
+      std::chrono::milliseconds(100),
       std::bind(&MarkerPositionNode::publish_marker_positions, this));
   }
 
