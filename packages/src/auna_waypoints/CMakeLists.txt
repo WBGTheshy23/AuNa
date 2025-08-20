@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(auna_f110)
+project(auna_waypoints)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
@@ -17,41 +17,40 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 
+find_package(ackermann_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(rclcpp_action REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
-find_package(auna_common REQUIRED)
-find_package(teleop_twist_joy REQUIRED)
 
 # Include Cpp "include" directory
 include_directories(include)
 
 # Add libraries
-add_library(vesc_start_node SHARED src/vesc_start/vesc_start.cpp)
+add_library(waypoint_publisher_node SHARED src/waypoint_publisher/waypoint_publisher.cpp)
 
 # Create Cpp executable
-add_executable(vesc_start src/vesc_start/vesc_start_main.cpp)
-
+add_executable(waypoint_publisher src/waypoint_publisher/waypoint_publisher_main.cpp)
 # Target dependencies
-set(vesc_start_dependencies rclcpp geometry_msgs nav_msgs)
-ament_target_dependencies(vesc_start_node ${vesc_start_dependencies})
-ament_target_dependencies(vesc_start ${vesc_start_dependencies})
+set(waypoint_publisher_dependencies rclcpp geometry_msgs nav2_msgs rclcpp_action tf2_ros tf2_geometry_msgs)
+ament_target_dependencies(waypoint_publisher_node ${waypoint_publisher_dependencies})
+ament_target_dependencies(waypoint_publisher ${waypoint_publisher_dependencies})
 
 # Link libraries
-target_link_libraries(vesc_start vesc_start_node)
+target_link_libraries(waypoint_publisher waypoint_publisher_node)
 
 # Install Cpp executables
 install(TARGETS
-  vesc_start
+  waypoint_publisher
   DESTINATION lib/${PROJECT_NAME}
 )
 
 install(TARGETS 
-  vesc_start_node
+  waypoint_publisher_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -60,7 +59,6 @@ install(TARGETS
 install(DIRECTORY 
   launch
   config
-  rviz
   DESTINATION share/${PROJECT_NAME}
 )
 
@@ -69,6 +67,7 @@ ament_python_install_package(${PROJECT_NAME})
 
 # Install Python executables
 install(PROGRAMS
+  scripts/curve_fitting.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

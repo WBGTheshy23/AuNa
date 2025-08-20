@@ -19,7 +19,6 @@ find_package(rclpy REQUIRED)
 
 find_package(auna_common REQUIRED)
 find_package(auna_msgs REQUIRED)
-find_package(gazebo_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -29,7 +28,6 @@ find_package(tf2_ros REQUIRED)
 find_package(etsi_its_msgs REQUIRED)
 find_package(etsi_its_msgs_utils REQUIRED)
 ####################################################
-find_package(gazebo_ros REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(visualization_msgs REQUIRED)
 #####################################################

@@ -15,7 +15,6 @@
   
   <depend>auna_common</depend>
   <depend>auna_msgs</depend>
-  <depend>gazebo_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>std_msgs</depend>
@@ -32,6 +31,5 @@
   
   <export>
     <build_type>ament_cmake</build_type>
-    <gazebo_ros gazebo_model_path="${prefix}/models"/>
   </export>
 </package>

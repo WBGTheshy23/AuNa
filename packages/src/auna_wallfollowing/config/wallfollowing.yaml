@@ -1,7 +1,7 @@
 wallfollowing_node:
   ros__parameters:
     # PID controller parameters
-    kp: 0.25
+    kp: 0.5
     kd: 0.0
     ki: 0.0
     

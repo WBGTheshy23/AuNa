@@ -176,7 +176,7 @@
 
   <gazebo reference="marker_1">
     <material>Gazebo/Red</material>
-    <gravity>false</gravity> <!-- Prevent marker from falling -->
+    <gravity>true</gravity> <!-- Prevent marker from falling -->
   </gazebo>
 
   <joint name="marker_1_joint" type="fixed">
@@ -209,7 +209,7 @@
 
   <gazebo reference="marker_2">
     <material>Gazebo/Green</material>
-    <gravity>false</gravity> <!-- Prevent marker from falling -->
+    <gravity>true</gravity> <!-- Prevent marker from falling -->
   </gazebo>
 
   <joint name="marker_2_joint" type="fixed">
@@ -242,7 +242,7 @@
 
   <gazebo reference="marker_3">
     <material>Gazebo/Blue</material>
-    <gravity>false</gravity> <!-- Prevent marker from falling -->
+    <gravity>true</gravity> <!-- Prevent marker from falling -->
   </gazebo>
 
   <joint name="marker_3_joint" type="fixed">
@@ -275,7 +275,7 @@
 
   <gazebo reference="marker_4">
     <material>Gazebo/Blue</material>
-    <gravity>false</gravity> <!-- Prevent marker from falling -->
+    <gravity>true</gravity> <!-- Prevent marker from falling -->
   </gazebo>
 
   <joint name="marker_4_joint" type="fixed">
@@ -309,7 +309,7 @@
 
     <gazebo reference="marker_5">
       <material>Gazebo/Blue</material>
-      <gravity>false</gravity> <!-- Prevent marker from falling -->
+      <gravity>true</gravity> <!-- Prevent marker from falling -->
     </gazebo>
     
     <joint name="marker_5_joint" type="fixed">
@@ -344,7 +344,7 @@
 
     <gazebo reference="marker_6">
       <material>Gazebo/Blue</material>
-      <gravity>false</gravity> <!-- Prevent marker from falling -->
+      <gravity>true</gravity> <!-- Prevent marker from falling -->
     </gazebo>
 
     <joint name="marker_6_joint" type="fixed">
@@ -379,7 +379,7 @@
 
     <gazebo reference="marker_7">
       <material>Gazebo/Blue</material>
-      <gravity>false</gravity> <!-- Prevent marker from falling -->
+      <gravity>true</gravity> <!-- Prevent marker from falling -->
     </gazebo>
 
     <joint name="marker_7_joint" type="fixed">
